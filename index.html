@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Marca puntos GPS con mapa interactivo">
+    <meta name="description" content="GPS Marker con mapa offline - Santo Domingo y Esmeraldas">
     <meta name="theme-color" content="#667eea">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     
-    <title>GPS Marker - Multi Usuario con Mapa</title>
+    <title>GPS Marker - Offline SD & Esmeraldas</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -38,7 +38,7 @@
             overflow: hidden;
         }
 
-        /* ===== LOGIN SCREEN ===== */
+        /* LOGIN SCREEN */
         .login-screen {
             padding: 40px 20px;
             text-align: center;
@@ -122,7 +122,7 @@
             font-size: 18px;
         }
 
-        /* ===== HEADER ===== */
+        /* HEADER */
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -165,11 +165,75 @@
             transition: all 0.3s;
         }
 
-        .logout-btn:hover {
-            background: #dc2626;
+        /* DOWNLOAD BANNER */
+        .download-banner {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
         }
 
-        /* ===== MAP ===== */
+        .download-banner.hidden {
+            display: none;
+        }
+
+        .download-info {
+            flex: 1;
+        }
+
+        .download-info h3 {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .download-info p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .download-progress {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .download-progress-bar {
+            height: 100%;
+            background: white;
+            border-radius: 4px;
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        .btn-download {
+            background: white;
+            color: #d97706;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* MAP */
         #map {
             height: 300px;
             width: 100%;
@@ -177,34 +241,51 @@
             z-index: 1;
         }
 
-        .map-controls {
+        .offline-indicator {
             position: absolute;
             top: 10px;
             right: 10px;
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .map-btn {
             background: white;
-            border: 2px solid #ddd;
             padding: 8px 12px;
             border-radius: 8px;
-            cursor: pointer;
             font-size: 12px;
             font-weight: 600;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .map-btn:hover {
-            background: #f0f0f0;
-            border-color: #667eea;
+        .offline-indicator.online {
+            color: #10b981;
         }
 
-        /* ===== CONTENT ===== */
+        .offline-indicator.offline {
+            color: #ef4444;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .online .status-dot {
+            background: #10b981;
+        }
+
+        .offline .status-dot {
+            background: #ef4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* CONTENT */
         .content {
             padding: 20px;
         }
@@ -220,9 +301,28 @@
             margin-bottom: 12px;
             padding-bottom: 8px;
             border-bottom: 2px solid #667eea;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        }
+
+        .alert {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #1e40af;
+        }
+
+        .alert.warning {
+            background: #fef3c7;
+            border-color: #fbbf24;
+            color: #92400e;
+        }
+
+        .alert.success {
+            background: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
         }
 
         .form-group {
@@ -290,10 +390,6 @@
             color: white;
         }
 
-        .btn-success:active {
-            transform: scale(0.98);
-        }
-
         .btn-secondary {
             background: #6b7280;
             color: white;
@@ -310,7 +406,6 @@
             min-width: auto;
         }
 
-        /* ===== POINTS LIST ===== */
         .points-list {
             margin-top: 15px;
             max-height: 400px;
@@ -385,7 +480,6 @@
             opacity: 0.9;
         }
 
-        /* ===== TOAST ===== */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -418,7 +512,6 @@
             }
         }
 
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             #map {
                 height: 250px;
@@ -430,11 +523,6 @@
 
             button {
                 width: 100%;
-            }
-
-            .header {
-                flex-direction: column;
-                text-align: center;
             }
         }
 
@@ -453,8 +541,8 @@
     <div class="container">
         <!-- LOGIN SCREEN -->
         <div id="loginScreen" class="login-screen">
-            <h1>📍 GPS Marker Multi-Usuario</h1>
-            <p>Selecciona tu usuario o crea uno nuevo</p>
+            <h1>📍 GPS Marker Offline</h1>
+            <p>Santo Domingo de los Tsáchilas & Esmeraldas</p>
             
             <div class="user-list" id="userList"></div>
             
@@ -469,7 +557,6 @@
 
         <!-- MAIN APP -->
         <div id="mainApp" class="hidden">
-            <!-- HEADER -->
             <div class="header">
                 <div class="header-left">
                     <h2>📍 GPS Marker</h2>
@@ -481,20 +568,46 @@
                 <button class="logout-btn" onclick="logout()">🚪 Cerrar Sesión</button>
             </div>
 
-            <!-- MAP -->
-            <div id="map"></div>
+            <!-- DOWNLOAD BANNER -->
+            <div class="download-banner" id="downloadBanner">
+                <div class="download-info">
+                    <h3 id="downloadTitle">💾 Descargar Mapa Offline</h3>
+                    <p id="downloadText">Descarga el mapa de tu región para usarlo sin internet (~15-30 MB)</p>
+                    <div class="download-progress hidden" id="downloadProgress">
+                        <div class="download-progress-bar" id="downloadProgressBar"></div>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn-download" id="btnStartDownload" onclick="startMapDownload()">
+                        Descargar Ahora
+                    </button>
+                    <button class="btn-cancel hidden" id="btnCancelDownload" onclick="cancelMapDownload()">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
 
-            <!-- CONTENT -->
+            <!-- MAP -->
+            <div style="position: relative;">
+                <div id="map"></div>
+                <div class="offline-indicator online" id="offlineIndicator">
+                    <span class="status-dot"></span>
+                    <span id="statusText">Online</span>
+                </div>
+            </div>
+
             <div class="content">
+                <div class="alert" id="mapAlert">
+                    ℹ️ <strong>Mapa:</strong> <span id="mapStatus">Con internet - Descarga el mapa para usarlo offline</span>
+                </div>
+
                 <div class="stats">
                     <div class="stat-number" id="pointCount">0</div>
                     <div class="stat-label">PUNTOS GUARDADOS</div>
                 </div>
 
                 <div class="section">
-                    <div class="section-title">
-                        <span>Agregar Nuevo Punto</span>
-                    </div>
+                    <div class="section-title">Agregar Nuevo Punto</div>
                     
                     <div class="form-group">
                         <label for="pointName">Nombre del Punto *</label>
@@ -526,7 +639,7 @@
                             📍 Mi Ubicación
                         </button>
                         <button class="btn-primary" onclick="pickFromMap()">
-                            🗺️ Elegir en Mapa
+                            🗺️ Del Mapa
                         </button>
                         <button class="btn-success" onclick="addPoint()">
                             ➕ Agregar
@@ -535,9 +648,7 @@
                 </div>
 
                 <div class="section">
-                    <div class="section-title">
-                        <span>Puntos Guardados</span>
-                    </div>
+                    <div class="section-title">Puntos Guardados</div>
                     <div id="pointsList" class="points-list">
                         <div class="empty-state">
                             <p>No hay puntos guardados.<br>Agrega tu primer punto arriba.</p>
@@ -560,23 +671,225 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
-        // ===== VARIABLES GLOBALES =====
+        // Variables globales
         let map;
         let currentUser = null;
         let users = {};
         let markers = [];
         let pickingFromMap = false;
         let tempMarker = null;
+        let offlineTileLayer = null;
+        let downloadCancelled = false;
+        
+        // Área de cobertura: Santo Domingo y Esmeraldas
+        const COVERAGE_BOUNDS = {
+            north: 1.5,    // Esmeraldas norte
+            south: -1.0,   // Santo Domingo sur
+            east: -78.5,   // Este
+            west: -80.0    // Costa oeste
+        };
+        
+        const CENTER_SD = [-0.25, -79.17];  // Santo Domingo
+        const CENTER_ESM = [0.97, -79.65];  // Esmeraldas
 
-        // ===== INICIALIZACIÓN =====
+        // Inicialización
         window.onload = function() {
             loadUsers();
             renderUserList();
+            updateOnlineStatus();
+            window.addEventListener('online', updateOnlineStatus);
+            window.addEventListener('offline', updateOnlineStatus);
         };
 
-        // ===== GESTIÓN DE USUARIOS =====
+        function updateOnlineStatus() {
+            const indicator = document.getElementById('offlineIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            if (navigator.onLine) {
+                indicator.className = 'offline-indicator online';
+                statusText.textContent = 'Online';
+            } else {
+                indicator.className = 'offline-indicator offline';
+                statusText.textContent = 'Offline';
+            }
+            
+            if (map) {
+                checkMapCacheStatus();
+            }
+        }
+
+        function checkMapCacheStatus() {
+            const mapAlert = document.getElementById('mapAlert');
+            const mapStatus = document.getElementById('mapStatus');
+            
+            // Verificar si hay tiles guardados
+            const cachedTiles = localStorage.getItem('mapTilesCached');
+            
+            if (cachedTiles === 'true') {
+                mapAlert.className = 'alert success';
+                mapStatus.textContent = 'Mapa descargado - Funciona sin internet ✅';
+                document.getElementById('downloadBanner').classList.add('hidden');
+            } else if (!navigator.onLine) {
+                mapAlert.className = 'alert warning';
+                mapStatus.textContent = 'Sin internet - Mapa no disponible (descárgalo cuando tengas internet)';
+            } else {
+                mapAlert.className = 'alert';
+                mapStatus.textContent = 'Con internet - Descarga el mapa para usarlo offline';
+            }
+        }
+
+        // Descargar mapa offline
+        async function startMapDownload() {
+            if (!navigator.onLine) {
+                showToast('⚠️ Necesitas internet para descargar el mapa');
+                return;
+            }
+
+            downloadCancelled = false;
+            const btnStart = document.getElementById('btnStartDownload');
+            const btnCancel = document.getElementById('btnCancelDownload');
+            const progress = document.getElementById('downloadProgress');
+            const progressBar = document.getElementById('downloadProgressBar');
+            const title = document.getElementById('downloadTitle');
+            const text = document.getElementById('downloadText');
+
+            btnStart.classList.add('hidden');
+            btnCancel.classList.remove('hidden');
+            progress.classList.remove('hidden');
+
+            title.textContent = '⏳ Descargando mapa...';
+            text.textContent = 'Esto puede tardar 2-5 minutos. No cierres la app.';
+
+            try {
+                // Calcular tiles a descargar (zoom 10-14)
+                const tilesToDownload = [];
+                for (let zoom = 10; zoom <= 14; zoom++) {
+                    const tiles = getTilesForBounds(COVERAGE_BOUNDS, zoom);
+                    tilesToDownload.push(...tiles);
+                }
+
+                showToast(`📥 Descargando ${tilesToDownload.length} imágenes...`);
+
+                let downloaded = 0;
+                const total = tilesToDownload.length;
+
+                // Descargar tiles
+                for (const tile of tilesToDownload) {
+                    if (downloadCancelled) {
+                        showToast('❌ Descarga cancelada');
+                        break;
+                    }
+
+                    try {
+                        await downloadTile(tile);
+                        downloaded++;
+                        const percent = Math.round((downloaded / total) * 100);
+                        progressBar.style.width = percent + '%';
+                        text.textContent = `Descargado: ${downloaded}/${total} (${percent}%)`;
+                    } catch (e) {
+                        console.error('Error downloading tile:', e);
+                    }
+                }
+
+                if (!downloadCancelled) {
+                    localStorage.setItem('mapTilesCached', 'true');
+                    title.textContent = '✅ Descarga completada';
+                    text.textContent = 'El mapa ya funciona sin internet';
+                    showToast('✅ Mapa descargado - Ya funciona offline');
+                    
+                    setTimeout(() => {
+                        document.getElementById('downloadBanner').classList.add('hidden');
+                        checkMapCacheStatus();
+                    }, 2000);
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('❌ Error al descargar el mapa');
+                title.textContent = '❌ Error en la descarga';
+                text.textContent = 'Intenta de nuevo más tarde';
+            }
+
+            btnStart.classList.remove('hidden');
+            btnCancel.classList.add('hidden');
+            progress.classList.add('hidden');
+        }
+
+        function cancelMapDownload() {
+            downloadCancelled = true;
+            document.getElementById('downloadTitle').textContent = '💾 Descargar Mapa Offline';
+            document.getElementById('downloadText').textContent = 'Descarga el mapa de tu región para usarlo sin internet';
+            document.getElementById('btnStartDownload').classList.remove('hidden');
+            document.getElementById('btnCancelDownload').classList.add('hidden');
+            document.getElementById('downloadProgress').classList.add('hidden');
+        }
+
+        function getTilesForBounds(bounds, zoom) {
+            const tiles = [];
+            const tileMin = latLonToTile(bounds.north, bounds.west, zoom);
+            const tileMax = latLonToTile(bounds.south, bounds.east, zoom);
+
+            for (let x = tileMin.x; x <= tileMax.x; x++) {
+                for (let y = tileMin.y; y <= tileMax.y; y++) {
+                    tiles.push({ x, y, z: zoom });
+                }
+            }
+
+            return tiles;
+        }
+
+        function latLonToTile(lat, lon, zoom) {
+            const n = Math.pow(2, zoom);
+            const x = Math.floor((lon + 180) / 360 * n);
+            const y = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * n);
+            return { x, y };
+        }
+
+        async function downloadTile(tile) {
+            const url = `https://tile.openstreetmap.org/${tile.z}/${tile.x}/${tile.y}.png`;
+            const response = await fetch(url);
+            const blob = await response.blob();
+            
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const key = `tile_${tile.z}_${tile.x}_${tile.y}`;
+                    try {
+                        localStorage.setItem(key, reader.result);
+                    } catch (e) {
+                        // Si se llena el storage, continuar sin guardar
+                        console.warn('Storage full, skipping tile');
+                    }
+                    resolve();
+                };
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        // Custom tile layer que usa cache
+        L.TileLayer.Offline = L.TileLayer.extend({
+            createTile: function(coords, done) {
+                const tile = document.createElement('img');
+                const key = `tile_${coords.z}_${coords.x}_${coords.y}`;
+                const cached = localStorage.getItem(key);
+
+                if (cached) {
+                    tile.src = cached;
+                    L.DomEvent.on(tile, 'load', L.Util.bind(this._tileOnLoad, this, done, tile));
+                } else {
+                    // Si no está en cache, cargar de internet
+                    tile.src = this.getTileUrl(coords);
+                    L.DomEvent.on(tile, 'load', L.Util.bind(this._tileOnLoad, this, done, tile));
+                    L.DomEvent.on(tile, 'error', L.Util.bind(this._tileOnError, this, done, tile));
+                }
+
+                return tile;
+            }
+        });
+
+        // Gestión de usuarios (mismo código que antes)
         function loadUsers() {
-            const stored = localStorage.getItem('gpsMarkerUsers');
+            const stored = localStorage.getItem('gpsMarkerUsersSD');
             if (stored) {
                 try {
                     users = JSON.parse(stored);
@@ -587,7 +900,7 @@
         }
 
         function saveUsers() {
-            localStorage.setItem('gpsMarkerUsers', JSON.stringify(users));
+            localStorage.setItem('gpsMarkerUsersSD', JSON.stringify(users));
         }
 
         function renderUserList() {
@@ -649,6 +962,7 @@
             
             initMap();
             renderPoints();
+            checkMapCacheStatus();
             showToast('👋 Bienvenido, ' + username);
         }
 
@@ -671,20 +985,19 @@
             }
         }
 
-        // ===== MAPA =====
+        // Mapa
         function initMap() {
             if (map) return;
 
-            // Inicializar mapa centrado en Ecuador
-            map = L.map('map').setView([-0.25, -79.17], 13);
+            map = L.map('map').setView(CENTER_SD, 11);
 
-            // Capa de OpenStreetMap
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            // Usar tile layer offline
+            offlineTileLayer = new L.TileLayer.Offline('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap',
-                maxZoom: 19
+                maxZoom: 18,
+                minZoom: 8
             }).addTo(map);
 
-            // Click en el mapa
             map.on('click', function(e) {
                 if (pickingFromMap) {
                     document.getElementById('latitude').value = e.latlng.lat.toFixed(6);
@@ -719,7 +1032,6 @@
         }
 
         function loadPointsToMap() {
-            // Limpiar markers existentes
             markers.forEach(marker => map.removeLayer(marker));
             markers = [];
 
@@ -732,28 +1044,13 @@
                 markers.push(marker);
             });
 
-            // Ajustar vista si hay puntos
             if (points.length > 0) {
                 const bounds = L.latLngBounds(points.map(p => [p.latitude, p.longitude]));
                 map.fitBounds(bounds, { padding: [50, 50] });
             }
         }
 
-        function centerMapOnUser() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        map.setView([position.coords.latitude, position.coords.longitude], 15);
-                        showToast('✅ Mapa centrado en tu ubicación');
-                    },
-                    (error) => {
-                        showToast('⚠️ No se pudo obtener ubicación');
-                    }
-                );
-            }
-        }
-
-        // ===== GPS =====
+        // GPS
         function getCurrentLocation() {
             if (!navigator.geolocation) {
                 showToast('❌ Geolocalización no soportada');
@@ -774,10 +1071,8 @@
                         document.getElementById('altitude').value = Math.round(position.coords.altitude);
                     }
 
-                    // Centrar mapa
                     map.setView([lat, lon], 15);
                     
-                    // Agregar marker temporal
                     if (tempMarker) map.removeLayer(tempMarker);
                     tempMarker = L.marker([lat, lon], {
                         icon: L.icon({
@@ -794,7 +1089,7 @@
                 (error) => {
                     let msg = '❌ Error de GPS: ';
                     switch(error.code) {
-                        case 1: msg += 'Permisos denegados'; break;
+                        case 1: msg += 'Permisos denegados. Ve a Ajustes → Apps → Chrome → Permisos → Ubicación'; break;
                         case 2: msg += 'Posición no disponible'; break;
                         case 3: msg += 'Tiempo agotado'; break;
                     }
@@ -808,7 +1103,7 @@
             );
         }
 
-        // ===== PUNTOS =====
+        // Puntos (mismo código que antes)
         function getCurrentUserPoints() {
             if (!currentUser || !users[currentUser]) return [];
             return users[currentUser].points || [];
@@ -943,7 +1238,7 @@
             `).join('');
         }
 
-        // ===== EXPORTAR =====
+        // Exportar
         function exportToKML() {
             const points = getCurrentUserPoints();
             if (points.length === 0) {
@@ -959,7 +1254,7 @@
         function generateKML(points) {
             const placemarks = points.map(point => `
     <Placemark>
-      <name>${escapeXml(point.name)}</name>
+      <n>${escapeXml(point.name)}</n>
       ${point.description ? `<description>${escapeXml(point.description)}</description>` : ''}
       <Point>
         <coordinates>${point.longitude},${point.latitude},${point.altitude}</coordinates>
@@ -969,7 +1264,7 @@
             return `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
-    <name>Puntos GPS - ${currentUser}</name>
+    <n>Puntos GPS - ${currentUser}</n>
     <description>Exportado el ${new Date().toLocaleDateString()}</description>
 ${placemarks}
   </Document>
@@ -993,21 +1288,21 @@ ${placemarks}
   <wpt lat="${point.latitude}" lon="${point.longitude}">
     <ele>${point.altitude}</ele>
     <time>${point.timestamp}</time>
-    <name>${escapeXml(point.name)}</name>
+    <n>${escapeXml(point.name)}</n>
     ${point.description ? `<desc>${escapeXml(point.description)}</desc>` : ''}
   </wpt>`).join('\n');
 
             return `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="GPS Marker" xmlns="http://www.topografix.com/GPX/1/1">
   <metadata>
-    <name>Puntos GPS - ${currentUser}</name>
+    <n>Puntos GPS - ${currentUser}</n>
     <time>${new Date().toISOString()}</time>
   </metadata>
 ${waypoints}
 </gpx>`;
         }
 
-        // ===== UTILIDADES =====
+        // Utilidades
         function escapeXml(unsafe) {
             if (!unsafe) return '';
             return String(unsafe).replace(/[<>&'"]/g, c => {
