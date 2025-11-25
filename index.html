@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="GPS Marker offline con mapa vectorial completo">
+    <meta name="description" content="GPS Marker offline - Optimizado para móvil">
     <meta name="theme-color" content="#667eea">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     
-    <title>GPS Marker - Mapa Vectorial Offline</title>
+    <title>GPS Marker - Móvil Optimizado</title>
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -167,7 +167,7 @@
 
         /* MAP */
         #map {
-            height: 400px;
+            height: 350px;
             width: 100%;
             border-radius: 0;
             z-index: 1;
@@ -179,15 +179,12 @@
             left: 10px;
             background: #10b981;
             color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 12px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
             font-weight: 600;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
 
         /* CONTENT */
@@ -398,6 +395,14 @@
             animation: slideUp 0.3s ease;
         }
 
+        .toast.error {
+            background: #ef4444;
+        }
+
+        .toast.success {
+            background: #10b981;
+        }
+
         @keyframes slideUp {
             from {
                 transform: translateX(-50%) translateY(100px);
@@ -432,8 +437,8 @@
     <div class="container">
         <!-- LOGIN SCREEN -->
         <div id="loginScreen" class="login-screen">
-            <h1>🗺️ GPS Marker Offline</h1>
-            <p>Mapa vectorial completo - Funciona 100% sin internet</p>
+            <h1>📱 GPS Marker Móvil</h1>
+            <p>Optimizado para celular · 100% offline</p>
             
             <div class="user-list" id="userList"></div>
             
@@ -450,26 +455,26 @@
         <div id="mainApp" class="hidden">
             <div class="header">
                 <div class="header-left">
-                    <h2>🗺️ GPS Marker Offline</h2>
+                    <h2>📱 GPS Marker</h2>
                     <div class="user-badge">
                         <span>👤</span>
                         <span id="currentUserName"></span>
                     </div>
                 </div>
-                <button class="logout-btn" onclick="logout()">🚪 Cerrar Sesión</button>
+                <button class="logout-btn" onclick="logout()">🚪 Salir</button>
             </div>
 
             <!-- MAP -->
             <div style="position: relative;">
                 <div id="map"></div>
                 <div class="offline-badge">
-                    ✅ Offline Ready
+                    ✅ Offline
                 </div>
             </div>
 
             <div class="content">
                 <div class="alert">
-                    ✅ <strong>Mapa Offline:</strong> Mapa vectorial completo tipo Maps.me - Funciona sin internet · Zoom hasta nivel 19
+                    ✅ <strong>Optimizado móvil:</strong> Guarda hasta 1000 puntos · Funciona sin internet
                 </div>
 
                 <div class="stats">
@@ -482,38 +487,38 @@
                     
                     <div class="form-group">
                         <label for="pointName">Nombre del Punto *</label>
-                        <input type="text" id="pointName" placeholder="Ej: Casa, Oficina, Mirador..." autocomplete="off">
+                        <input type="text" id="pointName" placeholder="Ej: Casa, Oficina..." autocomplete="off">
                     </div>
 
                     <div class="form-group">
                         <label for="latitude">Latitud *</label>
-                        <input type="number" id="latitude" step="any" placeholder="-0.250921" autocomplete="off">
+                        <input type="number" id="latitude" step="any" placeholder="-0.250921" autocomplete="off" readonly>
                     </div>
 
                     <div class="form-group">
                         <label for="longitude">Longitud *</label>
-                        <input type="number" id="longitude" step="any" placeholder="-79.175231" autocomplete="off">
+                        <input type="number" id="longitude" step="any" placeholder="-79.175231" autocomplete="off" readonly>
                     </div>
 
                     <div class="form-group">
-                        <label for="altitude">Altitud (metros)</label>
+                        <label for="altitude">Altitud (m)</label>
                         <input type="number" id="altitude" step="any" placeholder="550" autocomplete="off">
                     </div>
 
                     <div class="form-group">
                         <label for="description">Descripción</label>
-                        <textarea id="description" placeholder="Notas adicionales..."></textarea>
+                        <textarea id="description" placeholder="Notas..."></textarea>
                     </div>
 
                     <div class="button-group">
                         <button class="btn-primary" onclick="getCurrentLocation()">
-                            📍 Mi Ubicación
+                            📍 GPS
                         </button>
                         <button class="btn-primary" onclick="pickFromMap()">
-                            🗺️ Del Mapa
+                            🗺️ Mapa
                         </button>
                         <button class="btn-success" onclick="addPoint()">
-                            ➕ Agregar Punto
+                            ➕ GUARDAR
                         </button>
                     </div>
                 </div>
@@ -522,14 +527,14 @@
                     <div class="section-title">Puntos Guardados</div>
                     <div id="pointsList" class="points-list">
                         <div class="empty-state">
-                            <p>No hay puntos guardados.<br>Agrega tu primer punto arriba.</p>
+                            <p>📍 Sin puntos<br>Usa GPS o mapa arriba</p>
                         </div>
                     </div>
 
                     <div class="button-group" id="exportButtons" style="display: none; margin-top: 15px;">
-                        <button class="btn-success" onclick="exportToKML()">💾 Exportar KML</button>
-                        <button class="btn-secondary" onclick="exportToGPX()">💾 Exportar GPX</button>
-                        <button class="btn-danger" onclick="clearAllPoints()">🗑️ Borrar Todo</button>
+                        <button class="btn-success" onclick="exportToKML()">💾 KML</button>
+                        <button class="btn-secondary" onclick="exportToGPX()">💾 GPX</button>
+                        <button class="btn-danger" onclick="clearAllPoints()">🗑️ Borrar</button>
                     </div>
                 </div>
             </div>
@@ -545,124 +550,268 @@
         // Variables globales
         let map;
         let currentUser = null;
-        let users = {};
+        let db = null;
         let markers = [];
         let pickingFromMap = false;
         let tempMarker = null;
         
-        const CENTER_ECUADOR = [-1.5, -78.5];  // Centro de Ecuador
+        const CENTER_ECUADOR = [-1.5, -78.5];
+        const DB_NAME = 'GPSMarkerDB';
+        const DB_VERSION = 1;
 
-        // Service Worker para offline
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js').catch(() => {
-                console.log('Service worker not available');
+        // ===== INDEXEDDB (MÁS ESPACIO QUE LOCALSTORAGE) =====
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = () => {
+                    console.error('Error opening IndexedDB');
+                    reject(request.error);
+                };
+                
+                request.onsuccess = () => {
+                    db = request.result;
+                    console.log('✅ IndexedDB initialized');
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    
+                    if (!db.objectStoreNames.contains('users')) {
+                        const userStore = db.createObjectStore('users', { keyPath: 'name' });
+                        console.log('Created users store');
+                    }
+                    
+                    if (!db.objectStoreNames.contains('points')) {
+                        const pointStore = db.createObjectStore('points', { keyPath: 'id' });
+                        pointStore.createIndex('username', 'username', { unique: false });
+                        console.log('Created points store');
+                    }
+                };
             });
         }
 
-        // Inicialización
-        window.onload = function() {
-            loadUsers();
-            renderUserList();
-            console.log('App initialized');
+        async function saveUser(username) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['users'], 'readwrite');
+                const store = transaction.objectStore('users');
+                const user = {
+                    name: username,
+                    created: new Date().toISOString()
+                };
+                
+                const request = store.put(user);
+                
+                request.onsuccess = () => {
+                    console.log('User saved:', username);
+                    resolve(true);
+                };
+                
+                request.onerror = () => {
+                    console.error('Error saving user');
+                    reject(request.error);
+                };
+            });
+        }
+
+        async function getAllUsers() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['users'], 'readonly');
+                const store = transaction.objectStore('users');
+                const request = store.getAll();
+                
+                request.onsuccess = () => {
+                    console.log('Users loaded:', request.result.length);
+                    resolve(request.result);
+                };
+                
+                request.onerror = () => {
+                    console.error('Error loading users');
+                    reject(request.error);
+                };
+            });
+        }
+
+        async function deleteUser(username) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    // Delete user
+                    const userTx = db.transaction(['users'], 'readwrite');
+                    await userTx.objectStore('users').delete(username);
+                    
+                    // Delete all points for user
+                    const points = await getUserPoints(username);
+                    const pointTx = db.transaction(['points'], 'readwrite');
+                    const pointStore = pointTx.objectStore('points');
+                    
+                    for (const point of points) {
+                        await pointStore.delete(point.id);
+                    }
+                    
+                    console.log('User deleted:', username);
+                    resolve(true);
+                } catch (error) {
+                    console.error('Error deleting user:', error);
+                    reject(error);
+                }
+            });
+        }
+
+        async function savePoint(point) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['points'], 'readwrite');
+                const store = transaction.objectStore('points');
+                const request = store.put(point);
+                
+                request.onsuccess = () => {
+                    console.log('✅ Point saved to IndexedDB:', point.name);
+                    resolve(true);
+                };
+                
+                request.onerror = () => {
+                    console.error('❌ Error saving point to IndexedDB');
+                    reject(request.error);
+                };
+            });
+        }
+
+        async function getUserPoints(username) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['points'], 'readonly');
+                const store = transaction.objectStore('points');
+                const index = store.index('username');
+                const request = index.getAll(username);
+                
+                request.onsuccess = () => {
+                    console.log('Points loaded for', username, ':', request.result.length);
+                    resolve(request.result);
+                };
+                
+                request.onerror = () => {
+                    console.error('Error loading points');
+                    reject(request.error);
+                };
+            });
+        }
+
+        async function deletePoint(id) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['points'], 'readwrite');
+                const store = transaction.objectStore('points');
+                const request = store.delete(id);
+                
+                request.onsuccess = () => {
+                    console.log('Point deleted:', id);
+                    resolve(true);
+                };
+                
+                request.onerror = () => {
+                    console.error('Error deleting point');
+                    reject(request.error);
+                };
+            });
+        }
+
+        async function clearUserPoints(username) {
+            const points = await getUserPoints(username);
+            const transaction = db.transaction(['points'], 'readwrite');
+            const store = transaction.objectStore('points');
+            
+            for (const point of points) {
+                await store.delete(point.id);
+            }
+            
+            console.log('All points cleared for:', username);
+        }
+
+        // ===== INICIALIZACIÓN =====
+        window.onload = async function() {
+            console.log('=== GPS Marker Mobile App Starting ===');
+            try {
+                await initDB();
+                await renderUserList();
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showToast('❌ Error al iniciar. Recarga la página', 'error');
+            }
         };
 
         // ===== GESTIÓN DE USUARIOS =====
-        function loadUsers() {
-            const stored = localStorage.getItem('gpsMarkerUsersVector');
-            if (stored) {
+        async function renderUserList() {
+            const userList = document.getElementById('userList');
+            try {
+                const users = await getAllUsers();
+                
+                if (users.length === 0) {
+                    userList.innerHTML = '<p style="color: #999; font-size: 14px;">No hay usuarios</p>';
+                    return;
+                }
+
+                const userHTML = await Promise.all(users.map(async (user) => {
+                    const points = await getUserPoints(user.name);
+                    return `
+                        <div class="user-card" onclick="selectUser('${escapeHtml(user.name)}')">
+                            <div class="user-info">
+                                <div class="user-name">👤 ${escapeHtml(user.name)}</div>
+                                <div class="user-points">${points.length} punto(s)</div>
+                            </div>
+                            <button class="btn-delete-user" onclick="event.stopPropagation(); confirmDeleteUser('${escapeHtml(user.name)}')">
+                                🗑️
+                            </button>
+                        </div>
+                    `;
+                }));
+                
+                userList.innerHTML = userHTML.join('');
+            } catch (error) {
+                console.error('Error rendering users:', error);
+                userList.innerHTML = '<p style="color: #ef4444;">Error al cargar usuarios</p>';
+            }
+        }
+
+        async function createUser() {
+            const userName = document.getElementById('newUserName').value.trim();
+            
+            if (!userName) {
+                showToast('⚠️ Ingresa un nombre', 'error');
+                return;
+            }
+
+            try {
+                await saveUser(userName);
+                document.getElementById('newUserName').value = '';
+                await renderUserList();
+                showToast('✅ Usuario creado', 'success');
+            } catch (error) {
+                console.error('Error creating user:', error);
+                showToast('❌ Error al crear usuario', 'error');
+            }
+        }
+
+        async function confirmDeleteUser(username) {
+            if (confirm(`¿Eliminar "${username}" y sus puntos?`)) {
                 try {
-                    users = JSON.parse(stored);
-                    console.log('Users loaded:', Object.keys(users));
-                } catch(e) {
-                    console.error('Error loading users:', e);
-                    users = {};
+                    await deleteUser(username);
+                    await renderUserList();
+                    showToast('✅ Usuario eliminado', 'success');
+                } catch (error) {
+                    console.error('Error deleting user:', error);
+                    showToast('❌ Error al eliminar', 'error');
                 }
             }
         }
 
-        function saveUsers() {
-            try {
-                localStorage.setItem('gpsMarkerUsersVector', JSON.stringify(users));
-                console.log('Users saved:', Object.keys(users));
-                return true;
-            } catch(e) {
-                console.error('Error saving users:', e);
-                showToast('❌ Error al guardar datos');
-                return false;
-            }
-        }
-
-        function renderUserList() {
-            const userList = document.getElementById('userList');
-            const userKeys = Object.keys(users);
-            
-            if (userKeys.length === 0) {
-                userList.innerHTML = '<p style="color: #999; font-size: 14px;">No hay usuarios creados aún</p>';
-                return;
-            }
-
-            userList.innerHTML = userKeys.map(username => {
-                const user = users[username];
-                const pointCount = user.points ? user.points.length : 0;
-                return `
-                    <div class="user-card" onclick="selectUser('${escapeHtml(username)}')">
-                        <div class="user-info">
-                            <div class="user-name">👤 ${escapeHtml(username)}</div>
-                            <div class="user-points">${pointCount} punto(s) guardado(s)</div>
-                        </div>
-                        <button class="btn-delete-user" onclick="event.stopPropagation(); deleteUser('${escapeHtml(username)}')">
-                            🗑️
-                        </button>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function createUser() {
-            const userName = document.getElementById('newUserName').value.trim();
-            
-            if (!userName) {
-                showToast('⚠️ Ingresa un nombre de usuario');
-                return;
-            }
-
-            if (users[userName]) {
-                showToast('⚠️ Este usuario ya existe');
-                return;
-            }
-
-            users[userName] = {
-                name: userName,
-                points: [],
-                created: new Date().toISOString()
-            };
-
-            if (saveUsers()) {
-                document.getElementById('newUserName').value = '';
-                renderUserList();
-                showToast('✅ Usuario creado: ' + userName);
-            }
-        }
-
-        function selectUser(username) {
+        async function selectUser(username) {
             currentUser = username;
-            console.log('User selected:', username);
+            console.log('✅ User selected:', username);
             document.getElementById('currentUserName').textContent = username;
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             
             initMap();
-            renderPoints();
-            showToast('👋 Bienvenido, ' + username);
-        }
-
-        function deleteUser(username) {
-            if (confirm(`¿Eliminar usuario "${username}" y todos sus puntos?`)) {
-                delete users[username];
-                saveUsers();
-                renderUserList();
-                showToast('✅ Usuario eliminado');
-            }
+            await renderPoints();
+            showToast('👋 Hola ' + username, 'success');
         }
 
         function logout() {
@@ -671,104 +820,90 @@
                 document.getElementById('mainApp').classList.add('hidden');
                 document.getElementById('loginScreen').classList.remove('hidden');
                 clearForm();
-                showToast('👋 Sesión cerrada');
+                showToast('👋 Sesión cerrada', 'success');
             }
         }
 
         // ===== MAPA =====
         function initMap() {
-            if (map) {
-                console.log('Map already initialized');
-                return;
-            }
+            if (map) return;
 
             console.log('Initializing map...');
             map = L.map('map').setView(CENTER_ECUADOR, 7);
 
-            // Mapa vectorial de OpenStreetMap (tipo Maps.me)
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
+                attribution: '© OpenStreetMap',
                 maxZoom: 19,
                 minZoom: 3
             }).addTo(map);
 
             map.on('click', function(e) {
                 if (pickingFromMap) {
-                    const lat = e.latlng.lat.toFixed(6);
-                    const lon = e.latlng.lng.toFixed(6);
+                    document.getElementById('latitude').value = e.latlng.lat.toFixed(6);
+                    document.getElementById('longitude').value = e.latlng.lng.toFixed(6);
                     
-                    document.getElementById('latitude').value = lat;
-                    document.getElementById('longitude').value = lon;
-                    
-                    if (tempMarker) {
-                        map.removeLayer(tempMarker);
-                    }
+                    if (tempMarker) map.removeLayer(tempMarker);
                     
                     tempMarker = L.marker([e.latlng.lat, e.latlng.lng], {
                         icon: L.icon({
                             iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
                             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
                             iconSize: [25, 41],
-                            iconAnchor: [12, 41],
-                            popupAnchor: [1, -34],
-                            shadowSize: [41, 41]
+                            iconAnchor: [12, 41]
                         })
                     }).addTo(map);
                     
                     pickingFromMap = false;
-                    showToast('✅ Ubicación seleccionada: ' + lat + ', ' + lon);
-                    console.log('Location picked from map:', lat, lon);
+                    showToast('✅ Ubicación: ' + e.latlng.lat.toFixed(4) + ', ' + e.latlng.lng.toFixed(4), 'success');
                 }
             });
 
-            console.log('Map initialized successfully');
             loadPointsToMap();
         }
 
         function pickFromMap() {
             pickingFromMap = true;
-            showToast('🗺️ Haz clic en el mapa para elegir ubicación');
-            console.log('Pick from map mode activated');
+            showToast('🗺️ Toca el mapa', 'success');
         }
 
-        function loadPointsToMap() {
-            if (!map) return;
+        async function loadPointsToMap() {
+            if (!map || !currentUser) return;
 
             markers.forEach(marker => map.removeLayer(marker));
             markers = [];
 
-            const points = getCurrentUserPoints();
-            console.log('Loading points to map:', points.length);
-            
-            points.forEach(point => {
-                const marker = L.marker([point.latitude, point.longitude])
-                    .bindPopup(`<b>${escapeHtml(point.name)}</b><br>${escapeHtml(point.description || '')}`);
-                marker.addTo(map);
-                markers.push(marker);
-            });
+            try {
+                const points = await getUserPoints(currentUser);
+                
+                points.forEach(point => {
+                    const marker = L.marker([point.latitude, point.longitude])
+                        .bindPopup(`<b>${escapeHtml(point.name)}</b><br>${escapeHtml(point.description || '')}`);
+                    marker.addTo(map);
+                    markers.push(marker);
+                });
 
-            if (points.length > 0) {
-                const bounds = L.latLngBounds(points.map(p => [p.latitude, p.longitude]));
-                map.fitBounds(bounds, { padding: [50, 50] });
+                if (points.length > 0) {
+                    const bounds = L.latLngBounds(points.map(p => [p.latitude, p.longitude]));
+                    map.fitBounds(bounds, { padding: [50, 50] });
+                }
+            } catch (error) {
+                console.error('Error loading points to map:', error);
             }
         }
 
         // ===== GPS =====
         function getCurrentLocation() {
             if (!navigator.geolocation) {
-                showToast('❌ Geolocalización no soportada');
+                showToast('❌ GPS no disponible', 'error');
                 return;
             }
 
-            showToast('📍 Obteniendo ubicación GPS...');
-            console.log('Requesting geolocation...');
+            showToast('📍 Obteniendo GPS...', 'success');
 
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
-                    
-                    console.log('GPS location obtained:', lat, lon);
                     
                     document.getElementById('latitude').value = lat.toFixed(6);
                     document.getElementById('longitude').value = lon.toFixed(6);
@@ -791,24 +926,14 @@
                         }).addTo(map);
                     }
 
-                    const accuracy = Math.round(position.coords.accuracy);
-                    showToast(`✅ GPS obtenido (precisión: ${accuracy}m)`);
+                    showToast(`✅ GPS OK (${Math.round(position.coords.accuracy)}m)`, 'success');
                 },
                 (error) => {
-                    let msg = '❌ Error GPS: ';
-                    switch(error.code) {
-                        case 1: 
-                            msg += 'Permisos denegados. Activa ubicación en Ajustes → Apps → Chrome → Permisos'; 
-                            break;
-                        case 2: 
-                            msg += 'Posición no disponible. Activa el GPS del teléfono'; 
-                            break;
-                        case 3: 
-                            msg += 'Tiempo agotado. Intenta de nuevo'; 
-                            break;
-                    }
-                    console.error('Geolocation error:', error);
-                    showToast(msg);
+                    let msg = '❌ GPS: ';
+                    if (error.code === 1) msg += 'Sin permisos';
+                    else if (error.code === 2) msg += 'No disponible';
+                    else msg += 'Timeout';
+                    showToast(msg, 'error');
                 },
                 {
                     enableHighAccuracy: true,
@@ -819,69 +944,33 @@
         }
 
         // ===== PUNTOS =====
-        function getCurrentUserPoints() {
-            if (!currentUser || !users[currentUser]) {
-                console.log('No current user or user not found');
-                return [];
-            }
-            const points = users[currentUser].points || [];
-            console.log('Current user points:', points.length);
-            return points;
-        }
-
-        function saveCurrentUserPoints(points) {
-            if (!currentUser) {
-                console.error('Cannot save points: no current user');
-                return false;
-            }
-            
-            users[currentUser].points = points;
-            const saved = saveUsers();
-            
-            if (saved) {
-                console.log('Points saved for user:', currentUser, '- Total:', points.length);
-            }
-            
-            return saved;
-        }
-
-        function addPoint() {
-            console.log('=== ADD POINT FUNCTION CALLED ===');
+        async function addPoint() {
+            console.log('=== ADDING POINT ===');
             
             const name = document.getElementById('pointName').value.trim();
-            const latStr = document.getElementById('latitude').value;
-            const lonStr = document.getElementById('longitude').value;
-            const altStr = document.getElementById('altitude').value;
+            const lat = parseFloat(document.getElementById('latitude').value);
+            const lon = parseFloat(document.getElementById('longitude').value);
+            const alt = document.getElementById('altitude').value ? parseFloat(document.getElementById('altitude').value) : 0;
             const desc = document.getElementById('description').value.trim();
 
-            console.log('Form values:', { name, latStr, lonStr, altStr, desc });
-
             if (!name) {
-                showToast('⚠️ Ingresa un nombre para el punto');
-                console.log('Validation failed: no name');
+                showToast('⚠️ Falta el nombre', 'error');
                 return;
             }
 
-            const lat = parseFloat(latStr);
-            const lon = parseFloat(lonStr);
-            const alt = altStr ? parseFloat(altStr) : 0;
-
-            console.log('Parsed values:', { lat, lon, alt });
-
             if (isNaN(lat) || isNaN(lon)) {
-                showToast('⚠️ Coordenadas inválidas. Usa GPS o click en mapa');
-                console.log('Validation failed: invalid coordinates');
+                showToast('⚠️ Falta ubicación. Usa GPS o mapa', 'error');
                 return;
             }
 
             if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-                showToast('⚠️ Coordenadas fuera de rango válido');
-                console.log('Validation failed: coordinates out of range');
+                showToast('⚠️ Coordenadas inválidas', 'error');
                 return;
             }
 
             const point = {
                 id: Date.now(),
+                username: currentUser,
                 name: name,
                 latitude: lat,
                 longitude: lon,
@@ -890,59 +979,49 @@
                 timestamp: new Date().toISOString()
             };
 
-            console.log('Point object created:', point);
-
-            const points = getCurrentUserPoints();
-            console.log('Current points before adding:', points.length);
-            
-            points.push(point);
-            console.log('Point added to array, new length:', points.length);
-            
-            const saved = saveCurrentUserPoints(points);
-            
-            if (saved) {
-                console.log('Point saved successfully!');
+            try {
+                await savePoint(point);
                 clearForm();
-                renderPoints();
-                loadPointsToMap();
+                await renderPoints();
+                await loadPointsToMap();
                 
                 if (tempMarker) {
                     map.removeLayer(tempMarker);
                     tempMarker = null;
                 }
 
-                showToast('✅ Punto "' + name + '" agregado correctamente');
-            } else {
-                console.error('Failed to save point');
-                showToast('❌ Error al guardar el punto');
+                showToast('✅ Punto "' + name + '" guardado', 'success');
+                console.log('✅ Point saved successfully');
+            } catch (error) {
+                console.error('❌ Error saving point:', error);
+                showToast('❌ Error al guardar. Intenta de nuevo', 'error');
             }
-            
-            console.log('=== ADD POINT FUNCTION COMPLETED ===');
         }
 
-        function deletePoint(id) {
+        async function confirmDeletePoint(id) {
             if (confirm('¿Eliminar este punto?')) {
-                let points = getCurrentUserPoints();
-                const beforeLength = points.length;
-                points = points.filter(p => p.id !== id);
-                
-                console.log('Deleting point:', id, 'Before:', beforeLength, 'After:', points.length);
-                
-                if (saveCurrentUserPoints(points)) {
-                    renderPoints();
-                    loadPointsToMap();
-                    showToast('✅ Punto eliminado');
+                try {
+                    await deletePoint(id);
+                    await renderPoints();
+                    await loadPointsToMap();
+                    showToast('✅ Punto eliminado', 'success');
+                } catch (error) {
+                    console.error('Error:', error);
+                    showToast('❌ Error al eliminar', 'error');
                 }
             }
         }
 
-        function clearAllPoints() {
-            if (confirm('¿Eliminar TODOS los puntos? Esta acción no se puede deshacer.')) {
-                if (saveCurrentUserPoints([])) {
-                    renderPoints();
-                    loadPointsToMap();
-                    showToast('✅ Todos los puntos eliminados');
-                    console.log('All points cleared');
+        async function clearAllPoints() {
+            if (confirm('¿Eliminar TODOS los puntos?')) {
+                try {
+                    await clearUserPoints(currentUser);
+                    await renderPoints();
+                    await loadPointsToMap();
+                    showToast('✅ Todos eliminados', 'success');
+                } catch (error) {
+                    console.error('Error:', error);
+                    showToast('❌ Error', 'error');
                 }
             }
         }
@@ -950,7 +1029,7 @@
         function zoomToPoint(lat, lon) {
             if (map) {
                 map.setView([lat, lon], 17);
-                showToast('🎯 Mostrando punto en el mapa');
+                showToast('🎯 Mostrando punto', 'success');
             }
         }
 
@@ -960,74 +1039,78 @@
             document.getElementById('longitude').value = '';
             document.getElementById('altitude').value = '';
             document.getElementById('description').value = '';
-            console.log('Form cleared');
         }
 
-        function renderPoints() {
-            const points = getCurrentUserPoints();
+        async function renderPoints() {
             const pointsList = document.getElementById('pointsList');
             const pointCount = document.getElementById('pointCount');
             const exportButtons = document.getElementById('exportButtons');
 
-            console.log('Rendering points:', points.length);
+            try {
+                const points = await getUserPoints(currentUser);
 
-            pointCount.textContent = points.length;
+                pointCount.textContent = points.length;
 
-            if (points.length === 0) {
-                pointsList.innerHTML = `
-                    <div class="empty-state">
-                        <p>📍 No hay puntos guardados<br>Agrega tu primer punto arriba</p>
+                if (points.length === 0) {
+                    pointsList.innerHTML = `
+                        <div class="empty-state">
+                            <p>📍 Sin puntos<br>Usa GPS o mapa arriba</p>
+                        </div>
+                    `;
+                    exportButtons.style.display = 'none';
+                    return;
+                }
+
+                exportButtons.style.display = 'flex';
+
+                pointsList.innerHTML = points.map(point => `
+                    <div class="point-item">
+                        <div class="point-info">
+                            <div class="point-name">📍 ${escapeHtml(point.name)}</div>
+                            <div class="point-coords">
+                                ${point.latitude.toFixed(6)}, ${point.longitude.toFixed(6)}
+                                ${point.altitude ? `, ${point.altitude}m` : ''}
+                            </div>
+                            ${point.description ? `<div class="point-description">${escapeHtml(point.description)}</div>` : ''}
+                        </div>
+                        <div class="point-actions">
+                            <button class="btn-primary btn-small" onclick="zoomToPoint(${point.latitude}, ${point.longitude})">
+                                🎯
+                            </button>
+                            <button class="btn-danger btn-small" onclick="confirmDeletePoint(${point.id})">
+                                🗑️
+                            </button>
+                        </div>
                     </div>
-                `;
-                exportButtons.style.display = 'none';
-                return;
+                `).join('');
+            } catch (error) {
+                console.error('Error rendering points:', error);
+                pointsList.innerHTML = '<p style="color: #ef4444;">Error al cargar puntos</p>';
             }
-
-            exportButtons.style.display = 'flex';
-
-            pointsList.innerHTML = points.map(point => `
-                <div class="point-item">
-                    <div class="point-info">
-                        <div class="point-name">📍 ${escapeHtml(point.name)}</div>
-                        <div class="point-coords">
-                            Lat: ${point.latitude.toFixed(6)}, Lon: ${point.longitude.toFixed(6)}
-                            ${point.altitude ? `, Alt: ${point.altitude}m` : ''}
-                        </div>
-                        ${point.description ? `<div class="point-description">${escapeHtml(point.description)}</div>` : ''}
-                        <div style="font-size: 10px; color: #999; margin-top: 4px;">
-                            ${new Date(point.timestamp).toLocaleString('es-EC')}
-                        </div>
-                    </div>
-                    <div class="point-actions">
-                        <button class="btn-primary btn-small" onclick="zoomToPoint(${point.latitude}, ${point.longitude})">
-                            🎯 Ver
-                        </button>
-                        <button class="btn-danger btn-small" onclick="deletePoint(${point.id})">
-                            🗑️
-                        </button>
-                    </div>
-                </div>
-            `).join('');
         }
 
         // ===== EXPORTAR =====
-        function exportToKML() {
-            const points = getCurrentUserPoints();
-            if (points.length === 0) {
-                showToast('⚠️ No hay puntos para exportar');
-                return;
-            }
+        async function exportToKML() {
+            try {
+                const points = await getUserPoints(currentUser);
+                if (points.length === 0) {
+                    showToast('⚠️ No hay puntos', 'error');
+                    return;
+                }
 
-            const kml = generateKML(points);
-            downloadFile(kml, `${currentUser}_puntos_${getDateStr()}.kml`, 'application/vnd.google-earth.kml+xml');
-            showToast('✅ KML descargado (' + points.length + ' puntos)');
-            console.log('KML exported:', points.length, 'points');
+                const kml = generateKML(points);
+                downloadFile(kml, `${currentUser}_${getDateStr()}.kml`, 'application/vnd.google-earth.kml+xml');
+                showToast('✅ KML descargado', 'success');
+            } catch (error) {
+                console.error('Export error:', error);
+                showToast('❌ Error al exportar', 'error');
+            }
         }
 
         function generateKML(points) {
             const placemarks = points.map(point => `
     <Placemark>
-      <n>${escapeXml(point.name)}</n>
+      <name>${escapeXml(point.name)}</name>
       ${point.description ? `<description>${escapeXml(point.description)}</description>` : ''}
       <Point>
         <coordinates>${point.longitude},${point.latitude},${point.altitude}</coordinates>
@@ -1037,24 +1120,27 @@
             return `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
-    <n>Puntos GPS - ${escapeXml(currentUser)}</n>
-    <description>Exportado el ${new Date().toLocaleString('es-EC')}</description>
+    <name>GPS - ${escapeXml(currentUser)}</name>
 ${placemarks}
   </Document>
 </kml>`;
         }
 
-        function exportToGPX() {
-            const points = getCurrentUserPoints();
-            if (points.length === 0) {
-                showToast('⚠️ No hay puntos para exportar');
-                return;
-            }
+        async function exportToGPX() {
+            try {
+                const points = await getUserPoints(currentUser);
+                if (points.length === 0) {
+                    showToast('⚠️ No hay puntos', 'error');
+                    return;
+                }
 
-            const gpx = generateGPX(points);
-            downloadFile(gpx, `${currentUser}_puntos_${getDateStr()}.gpx`, 'application/gpx+xml');
-            showToast('✅ GPX descargado (' + points.length + ' puntos)');
-            console.log('GPX exported:', points.length, 'points');
+                const gpx = generateGPX(points);
+                downloadFile(gpx, `${currentUser}_${getDateStr()}.gpx`, 'application/gpx+xml');
+                showToast('✅ GPX descargado', 'success');
+            } catch (error) {
+                console.error('Export error:', error);
+                showToast('❌ Error al exportar', 'error');
+            }
         }
 
         function generateGPX(points) {
@@ -1062,14 +1148,14 @@ ${placemarks}
   <wpt lat="${point.latitude}" lon="${point.longitude}">
     <ele>${point.altitude}</ele>
     <time>${point.timestamp}</time>
-    <n>${escapeXml(point.name)}</n>
+    <name>${escapeXml(point.name)}</name>
     ${point.description ? `<desc>${escapeXml(point.description)}</desc>` : ''}
   </wpt>`).join('\n');
 
             return `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="GPS Marker Offline" xmlns="http://www.topografix.com/GPX/1/1">
+<gpx version="1.1" creator="GPS Marker">
   <metadata>
-    <n>Puntos GPS - ${escapeXml(currentUser)}</n>
+    <name>GPS - ${escapeXml(currentUser)}</name>
     <time>${new Date().toISOString()}</time>
   </metadata>
 ${waypoints}
@@ -1115,7 +1201,6 @@ ${waypoints}
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            console.log('File downloaded:', filename);
         }
 
         function getDateStr() {
@@ -1125,31 +1210,16 @@ ${waypoints}
                    String(now.getDate()).padStart(2, '0');
         }
 
-        function showToast(message) {
+        function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             toast.textContent = message;
-            toast.classList.add('show');
-            console.log('Toast:', message);
+            toast.className = 'toast show ' + type;
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
         }
 
-        // Debug: exponer funciones al window para testing
-        window.debugApp = {
-            users: () => users,
-            currentUser: () => currentUser,
-            points: getCurrentUserPoints,
-            addTestPoint: () => {
-                document.getElementById('pointName').value = 'Test Point';
-                document.getElementById('latitude').value = '-0.25';
-                document.getElementById('longitude').value = '-79.17';
-                addPoint();
-            }
-        };
-
-        console.log('=== GPS Marker App Loaded ===');
-        console.log('Debug functions available via window.debugApp');
+        console.log('=== App Loaded - Mobile Optimized ===');
     </script>
 </body>
 </html>
