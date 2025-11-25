@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="Marca puntos GPS - Funciona 100% offline">
+    <meta name="description" content="Marca puntos GPS con mapa interactivo">
     <meta name="theme-color" content="#667eea">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     
-    <title>GPS Marker - Offline Ecuador</title>
+    <title>GPS Marker - Multi Usuario con Mapa</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
         * {
@@ -35,7 +38,7 @@
             overflow: hidden;
         }
 
-        /* LOGIN SCREEN */
+        /* ===== LOGIN SCREEN ===== */
         .login-screen {
             padding: 40px 20px;
             text-align: center;
@@ -119,7 +122,7 @@
             font-size: 18px;
         }
 
-        /* HEADER */
+        /* ===== HEADER ===== */
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -162,40 +165,46 @@
             transition: all 0.3s;
         }
 
-        /* MAPA CANVAS */
-        #mapCanvas {
-            width: 100%;
-            height: 300px;
-            background: #e5e7eb;
-            border-bottom: 2px solid #d1d5db;
-            position: relative;
-            cursor: crosshair;
+        .logout-btn:hover {
+            background: #dc2626;
         }
 
-        .map-info {
+        /* ===== MAP ===== */
+        #map {
+            height: 300px;
+            width: 100%;
+            border-radius: 0;
+            z-index: 1;
+        }
+
+        .map-controls {
             position: absolute;
             top: 10px;
-            left: 10px;
+            right: 10px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .map-btn {
             background: white;
+            border: 2px solid #ddd;
             padding: 8px 12px;
             border-radius: 8px;
-            font-size: 11px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            font-family: monospace;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transition: all 0.3s;
         }
 
-        .map-legend {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            background: white;
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        .map-btn:hover {
+            background: #f0f0f0;
+            border-color: #667eea;
         }
 
-        /* CONTENT */
+        /* ===== CONTENT ===== */
         .content {
             padding: 20px;
         }
@@ -211,16 +220,9 @@
             margin-bottom: 12px;
             padding-bottom: 8px;
             border-bottom: 2px solid #667eea;
-        }
-
-        .alert {
-            background: #dbeafe;
-            border: 2px solid #3b82f6;
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 15px;
-            font-size: 13px;
-            color: #1e40af;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .form-group {
@@ -288,6 +290,10 @@
             color: white;
         }
 
+        .btn-success:active {
+            transform: scale(0.98);
+        }
+
         .btn-secondary {
             background: #6b7280;
             color: white;
@@ -304,6 +310,7 @@
             min-width: auto;
         }
 
+        /* ===== POINTS LIST ===== */
         .points-list {
             margin-top: 15px;
             max-height: 400px;
@@ -378,6 +385,7 @@
             opacity: 0.9;
         }
 
+        /* ===== TOAST ===== */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -410,8 +418,9 @@
             }
         }
 
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            #mapCanvas {
+            #map {
                 height: 250px;
             }
             
@@ -422,10 +431,15 @@
             button {
                 width: 100%;
             }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
         }
 
         @media (min-width: 769px) {
-            #mapCanvas {
+            #map {
                 height: 400px;
             }
         }
@@ -439,8 +453,8 @@
     <div class="container">
         <!-- LOGIN SCREEN -->
         <div id="loginScreen" class="login-screen">
-            <h1>📍 GPS Marker Offline</h1>
-            <p>Funciona 100% sin internet · Mapa de Ecuador pre-cargado</p>
+            <h1>📍 GPS Marker Multi-Usuario</h1>
+            <p>Selecciona tu usuario o crea uno nuevo</p>
             
             <div class="user-list" id="userList"></div>
             
@@ -455,6 +469,7 @@
 
         <!-- MAIN APP -->
         <div id="mainApp" class="hidden">
+            <!-- HEADER -->
             <div class="header">
                 <div class="header-left">
                     <h2>📍 GPS Marker</h2>
@@ -466,30 +481,20 @@
                 <button class="logout-btn" onclick="logout()">🚪 Cerrar Sesión</button>
             </div>
 
-            <!-- MAPA CANVAS -->
-            <div style="position: relative;">
-                <canvas id="mapCanvas"></canvas>
-                <div class="map-info">
-                    <div>Lat: <span id="displayLat">-0.25</span></div>
-                    <div>Lon: <span id="displayLon">-79.17</span></div>
-                </div>
-                <div class="map-legend">
-                    🔵 = Tus puntos | 🔴 = Ubicación actual | Click para marcar
-                </div>
-            </div>
+            <!-- MAP -->
+            <div id="map"></div>
 
+            <!-- CONTENT -->
             <div class="content">
-                <div class="alert">
-                    ✅ <strong>Modo Offline:</strong> Mapa de Ecuador pre-cargado. Funciona sin internet.
-                </div>
-
                 <div class="stats">
                     <div class="stat-number" id="pointCount">0</div>
                     <div class="stat-label">PUNTOS GUARDADOS</div>
                 </div>
 
                 <div class="section">
-                    <div class="section-title">Agregar Nuevo Punto</div>
+                    <div class="section-title">
+                        <span>Agregar Nuevo Punto</span>
+                    </div>
                     
                     <div class="form-group">
                         <label for="pointName">Nombre del Punto *</label>
@@ -520,6 +525,9 @@
                         <button class="btn-primary" onclick="getCurrentLocation()">
                             📍 Mi Ubicación
                         </button>
+                        <button class="btn-primary" onclick="pickFromMap()">
+                            🗺️ Elegir en Mapa
+                        </button>
                         <button class="btn-success" onclick="addPoint()">
                             ➕ Agregar
                         </button>
@@ -527,7 +535,9 @@
                 </div>
 
                 <div class="section">
-                    <div class="section-title">Puntos Guardados</div>
+                    <div class="section-title">
+                        <span>Puntos Guardados</span>
+                    </div>
                     <div id="pointsList" class="points-list">
                         <div class="empty-state">
                             <p>No hay puntos guardados.<br>Agrega tu primer punto arriba.</p>
@@ -546,153 +556,27 @@
 
     <div class="toast" id="toast"></div>
 
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
     <script>
-        // Variables globales
-        let canvas, ctx;
+        // ===== VARIABLES GLOBALES =====
+        let map;
         let currentUser = null;
         let users = {};
-        let currentMarker = null;
-        
-        // Límites de Ecuador
-        const ECUADOR_BOUNDS = {
-            minLat: -5.0,
-            maxLat: 1.5,
-            minLon: -81.0,
-            maxLon: -75.0
-        };
+        let markers = [];
+        let pickingFromMap = false;
+        let tempMarker = null;
 
-        // Inicialización
+        // ===== INICIALIZACIÓN =====
         window.onload = function() {
             loadUsers();
             renderUserList();
         };
 
-        function initMap() {
-            canvas = document.getElementById('mapCanvas');
-            ctx = canvas.getContext('2d');
-            
-            // Ajustar canvas al tamaño del contenedor
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
-            
-            // Eventos del mapa
-            canvas.addEventListener('click', handleMapClick);
-            canvas.addEventListener('mousemove', handleMapHover);
-            
-            drawMap();
-        }
-
-        function resizeCanvas() {
-            const container = canvas.parentElement;
-            canvas.width = container.clientWidth;
-            canvas.height = canvas.offsetHeight;
-            if (currentUser) drawMap();
-        }
-
-        function drawMap() {
-            // Limpiar canvas
-            ctx.fillStyle = '#e0f2fe';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Dibujar grid
-            ctx.strokeStyle = '#cbd5e1';
-            ctx.lineWidth = 1;
-            
-            // Líneas verticales (longitud)
-            for (let i = 0; i <= 10; i++) {
-                const x = (canvas.width / 10) * i;
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
-                ctx.stroke();
-            }
-            
-            // Líneas horizontales (latitud)
-            for (let i = 0; i <= 10; i++) {
-                const y = (canvas.height / 10) * i;
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
-                ctx.stroke();
-            }
-            
-            // Dibujar "Ecuador" en el centro
-            ctx.font = 'bold 24px Arial';
-            ctx.fillStyle = '#94a3b8';
-            ctx.textAlign = 'center';
-            ctx.fillText('ECUADOR', canvas.width / 2, canvas.height / 2);
-            
-            // Dibujar puntos guardados
-            const points = getCurrentUserPoints();
-            points.forEach(point => {
-                const coords = latLonToCanvas(point.latitude, point.longitude);
-                drawPoint(coords.x, coords.y, '#3b82f6', 8);
-                
-                // Etiqueta
-                ctx.fillStyle = '#1e40af';
-                ctx.font = '11px Arial';
-                ctx.fillText(point.name, coords.x, coords.y - 12);
-            });
-            
-            // Dibujar marcador temporal
-            if (currentMarker) {
-                const coords = latLonToCanvas(currentMarker.lat, currentMarker.lon);
-                drawPoint(coords.x, coords.y, '#ef4444', 10);
-            }
-        }
-
-        function drawPoint(x, y, color, size) {
-            ctx.fillStyle = color;
-            ctx.beginPath();
-            ctx.arc(x, y, size, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.strokeStyle = 'white';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-        }
-
-        function latLonToCanvas(lat, lon) {
-            const x = ((lon - ECUADOR_BOUNDS.minLon) / (ECUADOR_BOUNDS.maxLon - ECUADOR_BOUNDS.minLon)) * canvas.width;
-            const y = canvas.height - ((lat - ECUADOR_BOUNDS.minLat) / (ECUADOR_BOUNDS.maxLat - ECUADOR_BOUNDS.minLat)) * canvas.height;
-            return { x, y };
-        }
-
-        function canvasToLatLon(x, y) {
-            const lon = (x / canvas.width) * (ECUADOR_BOUNDS.maxLon - ECUADOR_BOUNDS.minLon) + ECUADOR_BOUNDS.minLon;
-            const lat = ((canvas.height - y) / canvas.height) * (ECUADOR_BOUNDS.maxLat - ECUADOR_BOUNDS.minLat) + ECUADOR_BOUNDS.minLat;
-            return { lat, lon };
-        }
-
-        function handleMapClick(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const coords = canvasToLatLon(x, y);
-            
-            document.getElementById('latitude').value = coords.lat.toFixed(6);
-            document.getElementById('longitude').value = coords.lon.toFixed(6);
-            
-            currentMarker = { lat: coords.lat, lon: coords.lon };
-            drawMap();
-            
-            showToast('📍 Ubicación seleccionada del mapa');
-        }
-
-        function handleMapHover(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const coords = canvasToLatLon(x, y);
-            document.getElementById('displayLat').textContent = coords.lat.toFixed(6);
-            document.getElementById('displayLon').textContent = coords.lon.toFixed(6);
-        }
-
-        // Gestión de usuarios
+        // ===== GESTIÓN DE USUARIOS =====
         function loadUsers() {
-            const stored = localStorage.getItem('gpsMarkerUsersOffline');
+            const stored = localStorage.getItem('gpsMarkerUsers');
             if (stored) {
                 try {
                     users = JSON.parse(stored);
@@ -703,7 +587,7 @@
         }
 
         function saveUsers() {
-            localStorage.setItem('gpsMarkerUsersOffline', JSON.stringify(users));
+            localStorage.setItem('gpsMarkerUsers', JSON.stringify(users));
         }
 
         function renderUserList() {
@@ -787,7 +671,89 @@
             }
         }
 
-        // GPS
+        // ===== MAPA =====
+        function initMap() {
+            if (map) return;
+
+            // Inicializar mapa centrado en Ecuador
+            map = L.map('map').setView([-0.25, -79.17], 13);
+
+            // Capa de OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Click en el mapa
+            map.on('click', function(e) {
+                if (pickingFromMap) {
+                    document.getElementById('latitude').value = e.latlng.lat.toFixed(6);
+                    document.getElementById('longitude').value = e.latlng.lng.toFixed(6);
+                    
+                    if (tempMarker) {
+                        map.removeLayer(tempMarker);
+                    }
+                    
+                    tempMarker = L.marker([e.latlng.lat, e.latlng.lng], {
+                        icon: L.icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                        })
+                    }).addTo(map);
+                    
+                    pickingFromMap = false;
+                    showToast('✅ Ubicación seleccionada del mapa');
+                }
+            });
+
+            loadPointsToMap();
+        }
+
+        function pickFromMap() {
+            pickingFromMap = true;
+            showToast('🗺️ Haz clic en el mapa para elegir ubicación');
+        }
+
+        function loadPointsToMap() {
+            // Limpiar markers existentes
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            const points = getCurrentUserPoints();
+            
+            points.forEach(point => {
+                const marker = L.marker([point.latitude, point.longitude])
+                    .bindPopup(`<b>${point.name}</b><br>${point.description || ''}`);
+                marker.addTo(map);
+                markers.push(marker);
+            });
+
+            // Ajustar vista si hay puntos
+            if (points.length > 0) {
+                const bounds = L.latLngBounds(points.map(p => [p.latitude, p.longitude]));
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }
+
+        function centerMapOnUser() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        map.setView([position.coords.latitude, position.coords.longitude], 15);
+                        showToast('✅ Mapa centrado en tu ubicación');
+                    },
+                    (error) => {
+                        showToast('⚠️ No se pudo obtener ubicación');
+                    }
+                );
+            }
+        }
+
+        // ===== GPS =====
         function getCurrentLocation() {
             if (!navigator.geolocation) {
                 showToast('❌ Geolocalización no soportada');
@@ -808,8 +774,19 @@
                         document.getElementById('altitude').value = Math.round(position.coords.altitude);
                     }
 
-                    currentMarker = { lat, lon };
-                    drawMap();
+                    // Centrar mapa
+                    map.setView([lat, lon], 15);
+                    
+                    // Agregar marker temporal
+                    if (tempMarker) map.removeLayer(tempMarker);
+                    tempMarker = L.marker([lat, lon], {
+                        icon: L.icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41]
+                        })
+                    }).addTo(map);
 
                     const accuracy = Math.round(position.coords.accuracy);
                     showToast(`✅ Ubicación obtenida (${accuracy}m precisión)`);
@@ -831,7 +808,7 @@
             );
         }
 
-        // Puntos
+        // ===== PUNTOS =====
         function getCurrentUserPoints() {
             if (!currentUser || !users[currentUser]) return [];
             return users[currentUser].points || [];
@@ -881,8 +858,12 @@
             
             clearForm();
             renderPoints();
-            currentMarker = null;
-            drawMap();
+            loadPointsToMap();
+            
+            if (tempMarker) {
+                map.removeLayer(tempMarker);
+                tempMarker = null;
+            }
 
             showToast('✅ Punto agregado');
         }
@@ -893,7 +874,7 @@
                 points = points.filter(p => p.id !== id);
                 saveCurrentUserPoints(points);
                 renderPoints();
-                drawMap();
+                loadPointsToMap();
                 showToast('✅ Punto eliminado');
             }
         }
@@ -902,15 +883,14 @@
             if (confirm('¿Eliminar TODOS los puntos? No se puede deshacer.')) {
                 saveCurrentUserPoints([]);
                 renderPoints();
-                drawMap();
+                loadPointsToMap();
                 showToast('✅ Todos los puntos eliminados');
             }
         }
 
         function zoomToPoint(lat, lon) {
-            currentMarker = { lat, lon };
-            drawMap();
-            showToast('🎯 Punto mostrado en el mapa');
+            map.setView([lat, lon], 17);
+            showToast('🎯 Mostrando punto en el mapa');
         }
 
         function clearForm() {
@@ -919,7 +899,6 @@
             document.getElementById('longitude').value = '';
             document.getElementById('altitude').value = '';
             document.getElementById('description').value = '';
-            currentMarker = null;
         }
 
         function renderPoints() {
@@ -964,7 +943,7 @@
             `).join('');
         }
 
-        // Exportar
+        // ===== EXPORTAR =====
         function exportToKML() {
             const points = getCurrentUserPoints();
             if (points.length === 0) {
@@ -980,7 +959,7 @@
         function generateKML(points) {
             const placemarks = points.map(point => `
     <Placemark>
-      <n>${escapeXml(point.name)}</n>
+      <name>${escapeXml(point.name)}</name>
       ${point.description ? `<description>${escapeXml(point.description)}</description>` : ''}
       <Point>
         <coordinates>${point.longitude},${point.latitude},${point.altitude}</coordinates>
@@ -990,7 +969,7 @@
             return `<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
-    <n>Puntos GPS - ${currentUser}</n>
+    <name>Puntos GPS - ${currentUser}</name>
     <description>Exportado el ${new Date().toLocaleDateString()}</description>
 ${placemarks}
   </Document>
@@ -1014,21 +993,21 @@ ${placemarks}
   <wpt lat="${point.latitude}" lon="${point.longitude}">
     <ele>${point.altitude}</ele>
     <time>${point.timestamp}</time>
-    <n>${escapeXml(point.name)}</n>
+    <name>${escapeXml(point.name)}</name>
     ${point.description ? `<desc>${escapeXml(point.description)}</desc>` : ''}
   </wpt>`).join('\n');
 
             return `<?xml version="1.0" encoding="UTF-8"?>
-<gpx version="1.1" creator="GPS Marker Offline" xmlns="http://www.topografix.com/GPX/1/1">
+<gpx version="1.1" creator="GPS Marker" xmlns="http://www.topografix.com/GPX/1/1">
   <metadata>
-    <n>Puntos GPS - ${currentUser}</n>
+    <name>Puntos GPS - ${currentUser}</name>
     <time>${new Date().toISOString()}</time>
   </metadata>
 ${waypoints}
 </gpx>`;
         }
 
-        // Utilidades
+        // ===== UTILIDADES =====
         function escapeXml(unsafe) {
             if (!unsafe) return '';
             return String(unsafe).replace(/[<>&'"]/g, c => {
