@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Marca puntos GPS con mapa interactivo">
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <title>GPS Marker - Multi Usuario con Mapa</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        /* ===== LOGIN SCREEN ===== */
+        .login-screen {
+            padding: 40px 20px;
+            text-align: center;
+            min-height: 400px;
+        }
+
+        .login-screen h1 {
+            font-size: 28px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .login-screen p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .user-list {
+            margin: 20px auto;
+            max-width: 500px;
+        }
+
+        .user-card {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-card:hover, .user-card:active {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .user-info {
+            text-align: left;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .user-points {
+            font-size: 13px;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        .btn-delete-user {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .new-user-form {
+            margin: 30px auto;
+            padding: 20px;
+            background: #f0f4ff;
+            border-radius: 12px;
+            max-width: 500px;
+        }
+
+        .new-user-form h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .header-left h2 {
+            font-size: 20px;
+            margin-bottom: 3px;
+        }
+
+        .user-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+        }
+
+        /* ===== MAP ===== */
+        #map {
+            height: 300px;
+            width: 100%;
+            border-radius: 0;
+            z-index: 1;
+        }
+
+        .map-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .map-btn {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .map-btn:hover {
+            background: #f0f0f0;
+            border-color: #667eea;
+        }
+
+        /* ===== CONTENT ===== */
+        .content {
+            padding: 20px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+            min-width: auto;
+        }
+
+        /* ===== POINTS LIST ===== */
+        .points-list {
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .point-item {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+
+        .point-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+
+        .point-info {
+            margin-bottom: 8px;
+        }
+
+        .point-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .point-coords {
+            font-size: 12px;
+            color: #666;
+            font-family: 'Courier New', monospace;
+        }
+
+        .point-description {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        .point-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .stats {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 10000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            max-width: 90%;
+        }
+
+        .toast.show {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            #map {
+                height: 250px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        @media (min-width: 769px) {
+            #map {
+                height: 400px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- LOGIN SCREEN -->
+        <div id="loginScreen" class="login-screen">
+            <h1>📍 GPS Marker Multi-Usuario</h1>
+            <p>Selecciona tu usuario o crea uno nuevo</p>
+            
+            <div class="user-list" id="userList"></div>
+            
+            <div class="new-user-form">
+                <h3>➕ Crear Nuevo Usuario</h3>
+                <div class="form-group">
+                    <input type="text" id="newUserName" placeholder="Tu nombre o apodo" autocomplete="off">
+                </div>
+                <button class="btn-primary" onclick="createUser()">Crear Usuario</button>
+            </div>
+        </div>
+
+        <!-- MAIN APP -->
+        <div id="mainApp" class="hidden">
+            <!-- HEADER -->
+            <div class="header">
+                <div class="header-left">
+                    <h2>📍 GPS Marker</h2>
+                    <div class="user-badge">
+                        <span>👤</span>
+                        <span id="currentUserName"></span>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">🚪 Cerrar Sesión</button>
+            </div>
+
+            <!-- MAP -->
+            <div id="map"></div>
+
+            <!-- CONTENT -->
+            <div class="content">
+                <div class="stats">
+                    <div class="stat-number" id="pointCount">0</div>
+                    <div class="stat-label">PUNTOS GUARDADOS</div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">
+                        <span>Agregar Nuevo Punto</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="pointName">Nombre del Punto *</label>
+                        <input type="text" id="pointName" placeholder="Ej: Casa, Oficina, Mirador..." autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="latitude">Latitud *</label>
+                        <input type="number" id="latitude" step="any" placeholder="-0.250921" autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="longitude">Longitud *</label>
+                        <input type="number" id="longitude" step="any" placeholder="-79.175231" autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="altitude">Altitud (metros)</label>
+                        <input type="number" id="altitude" step="any" placeholder="550" autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Descripción</label>
+                        <textarea id="description" placeholder="Notas adicionales..."></textarea>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="getCurrentLocation()">
+                            📍 Mi Ubicación
+                        </button>
+                        <button class="btn-primary" onclick="pickFromMap()">
+                            🗺️ Elegir en Mapa
+                        </button>
+                        <button class="btn-success" onclick="addPoint()">
+                            ➕ Agregar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">
+                        <span>Puntos Guardados</span>
+                    </div>
+                    <div id="pointsList" class="points-list">
+                        <div class="empty-state">
+                            <p>No hay puntos guardados.<br>Agrega tu primer punto arriba.</p>
+                        </div>
+                    </div>
+
+                    <div class="button-group" id="exportButtons" style="display: none; margin-top: 15px;">
+                        <button class="btn-success" onclick="exportToKML()">💾 KML</button>
+                        <button class="btn-secondary" onclick="exportToGPX()">💾 GPX</button>
+                        <button class="btn-danger" onclick="clearAllPoints()">🗑️ Borrar Todo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // ===== VARIABLES GLOBALES =====
+        let map;
+        let currentUser = null;
+        let users = {};
+        let markers = [];
+        let pickingFromMap = false;
+        let tempMarker = null;
+
+        // ===== INICIALIZACIÓN =====
+        window.onload = function() {
+            loadUsers();
+            renderUserList();
+        };
+
+        // ===== GESTIÓN DE USUARIOS =====
+        function loadUsers() {
+            const stored = localStorage.getItem('gpsMarkerUsers');
+            if (stored) {
+                try {
+                    users = JSON.parse(stored);
+                } catch(e) {
+                    users = {};
+                }
+            }
+        }
+
+        function saveUsers() {
+            localStorage.setItem('gpsMarkerUsers', JSON.stringify(users));
+        }
+
+        function renderUserList() {
+            const userList = document.getElementById('userList');
+            const userKeys = Object.keys(users);
+            
+            if (userKeys.length === 0) {
+                userList.innerHTML = '<p style="color: #999; font-size: 14px;">No hay usuarios creados aún</p>';
+                return;
+            }
+
+            userList.innerHTML = userKeys.map(username => {
+                const user = users[username];
+                const pointCount = user.points ? user.points.length : 0;
+                return `
+                    <div class="user-card" onclick="selectUser('${username}')">
+                        <div class="user-info">
+                            <div class="user-name">👤 ${username}</div>
+                            <div class="user-points">${pointCount} punto(s) guardado(s)</div>
+                        </div>
+                        <button class="btn-delete-user" onclick="event.stopPropagation(); deleteUser('${username}')">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function createUser() {
+            const userName = document.getElementById('newUserName').value.trim();
+            
+            if (!userName) {
+                showToast('⚠️ Ingresa un nombre de usuario');
+                return;
+            }
+
+            if (users[userName]) {
+                showToast('⚠️ Este usuario ya existe');
+                return;
+            }
+
+            users[userName] = {
+                name: userName,
+                points: [],
+                created: new Date().toISOString()
+            };
+
+            saveUsers();
+            document.getElementById('newUserName').value = '';
+            renderUserList();
+            showToast('✅ Usuario creado: ' + userName);
+        }
+
+        function selectUser(username) {
+            currentUser = username;
+            document.getElementById('currentUserName').textContent = username;
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            
+            initMap();
+            renderPoints();
+            showToast('👋 Bienvenido, ' + username);
+        }
+
+        function deleteUser(username) {
+            if (confirm(`¿Eliminar usuario "${username}" y todos sus puntos?`)) {
+                delete users[username];
+                saveUsers();
+                renderUserList();
+                showToast('✅ Usuario eliminado');
+            }
+        }
+
+        function logout() {
+            if (confirm('¿Cerrar sesión?')) {
+                currentUser = null;
+                document.getElementById('mainApp').classList.add('hidden');
+                document.getElementById('loginScreen').classList.remove('hidden');
+                clearForm();
+                showToast('👋 Sesión cerrada');
+            }
+        }
+
+        // ===== MAPA =====
+        function initMap() {
+            if (map) return;
+
+            // Inicializar mapa centrado en Ecuador
+            map = L.map('map').setView([-0.25, -79.17], 13);
+
+            // Capa de OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Click en el mapa
+            map.on('click', function(e) {
+                if (pickingFromMap) {
+                    document.getElementById('latitude').value = e.latlng.lat.toFixed(6);
+                    document.getElementById('longitude').value = e.latlng.lng.toFixed(6);
+                    
+                    if (tempMarker) {
+                        map.removeLayer(tempMarker);
+                    }
+                    
+                    tempMarker = L.marker([e.latlng.lat, e.latlng.lng], {
+                        icon: L.icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                        })
+                    }).addTo(map);
+                    
+                    pickingFromMap = false;
+                    showToast('✅ Ubicación seleccionada del mapa');
+                }
+            });
+
+            loadPointsToMap();
+        }
+
+        function pickFromMap() {
+            pickingFromMap = true;
+            showToast('🗺️ Haz clic en el mapa para elegir ubicación');
+        }
+
+        function loadPointsToMap() {
+            // Limpiar markers existentes
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            const points = getCurrentUserPoints();
+            
+            points.forEach(point => {
+                const marker = L.marker([point.latitude, point.longitude])
+                    .bindPopup(`<b>${point.name}</b><br>${point.description || ''}`);
+                marker.addTo(map);
+                markers.push(marker);
+            });
+
+            // Ajustar vista si hay puntos
+            if (points.length > 0) {
+                const bounds = L.latLngBounds(points.map(p => [p.latitude, p.longitude]));
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }
+
+        function centerMapOnUser() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        map.setView([position.coords.latitude, position.coords.longitude], 15);
+                        showToast('✅ Mapa centrado en tu ubicación');
+                    },
+                    (error) => {
+                        showToast('⚠️ No se pudo obtener ubicación');
+                    }
+                );
+            }
+        }
+
+        // ===== GPS =====
+        function getCurrentLocation() {
+            if (!navigator.geolocation) {
+                showToast('❌ Geolocalización no soportada');
+                return;
+            }
+
+            showToast('📍 Obteniendo ubicación...');
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    
+                    document.getElementById('latitude').value = lat.toFixed(6);
+                    document.getElementById('longitude').value = lon.toFixed(6);
+                    
+                    if (position.coords.altitude) {
+                        document.getElementById('altitude').value = Math.round(position.coords.altitude);
+                    }
+
+                    // Centrar mapa
+                    map.setView([lat, lon], 15);
+                    
+                    // Agregar marker temporal
+                    if (tempMarker) map.removeLayer(tempMarker);
+                    tempMarker = L.marker([lat, lon], {
+                        icon: L.icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41]
+                        })
+                    }).addTo(map);
+
+                    const accuracy = Math.round(position.coords.accuracy);
+                    showToast(`✅ Ubicación obtenida (${accuracy}m precisión)`);
+                },
+                (error) => {
+                    let msg = '❌ Error de GPS: ';
+                    switch(error.code) {
+                        case 1: msg += 'Permisos denegados'; break;
+                        case 2: msg += 'Posición no disponible'; break;
+                        case 3: msg += 'Tiempo agotado'; break;
+                    }
+                    showToast(msg);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        // ===== PUNTOS =====
+        function getCurrentUserPoints() {
+            if (!currentUser || !users[currentUser]) return [];
+            return users[currentUser].points || [];
+        }
+
+        function saveCurrentUserPoints(points) {
+            if (!currentUser) return;
+            users[currentUser].points = points;
+            saveUsers();
+        }
+
+        function addPoint() {
+            const name = document.getElementById('pointName').value.trim();
+            const lat = parseFloat(document.getElementById('latitude').value);
+            const lon = parseFloat(document.getElementById('longitude').value);
+            const alt = document.getElementById('altitude').value ? parseFloat(document.getElementById('altitude').value) : 0;
+            const desc = document.getElementById('description').value.trim();
+
+            if (!name) {
+                showToast('⚠️ Ingresa un nombre');
+                return;
+            }
+
+            if (isNaN(lat) || isNaN(lon)) {
+                showToast('⚠️ Coordenadas inválidas');
+                return;
+            }
+
+            if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+                showToast('⚠️ Coordenadas fuera de rango');
+                return;
+            }
+
+            const point = {
+                id: Date.now(),
+                name: name,
+                latitude: lat,
+                longitude: lon,
+                altitude: alt,
+                description: desc,
+                timestamp: new Date().toISOString()
+            };
+
+            const points = getCurrentUserPoints();
+            points.push(point);
+            saveCurrentUserPoints(points);
+            
+            clearForm();
+            renderPoints();
+            loadPointsToMap();
+            
+            if (tempMarker) {
+                map.removeLayer(tempMarker);
+                tempMarker = null;
+            }
+
+            showToast('✅ Punto agregado');
+        }
+
+        function deletePoint(id) {
+            if (confirm('¿Eliminar este punto?')) {
+                let points = getCurrentUserPoints();
+                points = points.filter(p => p.id !== id);
+                saveCurrentUserPoints(points);
+                renderPoints();
+                loadPointsToMap();
+                showToast('✅ Punto eliminado');
+            }
+        }
+
+        function clearAllPoints() {
+            if (confirm('¿Eliminar TODOS los puntos? No se puede deshacer.')) {
+                saveCurrentUserPoints([]);
+                renderPoints();
+                loadPointsToMap();
+                showToast('✅ Todos los puntos eliminados');
+            }
+        }
+
+        function zoomToPoint(lat, lon) {
+            map.setView([lat, lon], 17);
+            showToast('🎯 Mostrando punto en el mapa');
+        }
+
+        function clearForm() {
+            document.getElementById('pointName').value = '';
+            document.getElementById('latitude').value = '';
+            document.getElementById('longitude').value = '';
+            document.getElementById('altitude').value = '';
+            document.getElementById('description').value = '';
+        }
+
+        function renderPoints() {
+            const points = getCurrentUserPoints();
+            const pointsList = document.getElementById('pointsList');
+            const pointCount = document.getElementById('pointCount');
+            const exportButtons = document.getElementById('exportButtons');
+
+            pointCount.textContent = points.length;
+
+            if (points.length === 0) {
+                pointsList.innerHTML = `
+                    <div class="empty-state">
+                        <p>No hay puntos guardados.<br>Agrega tu primer punto arriba.</p>
+                    </div>
+                `;
+                exportButtons.style.display = 'none';
+                return;
+            }
+
+            exportButtons.style.display = 'flex';
+
+            pointsList.innerHTML = points.map(point => `
+                <div class="point-item">
+                    <div class="point-info">
+                        <div class="point-name">📍 ${escapeHtml(point.name)}</div>
+                        <div class="point-coords">
+                            Lat: ${point.latitude.toFixed(6)}, Lon: ${point.longitude.toFixed(6)}
+                            ${point.altitude ? `, Alt: ${point.altitude}m` : ''}
+                        </div>
+                        ${point.description ? `<div class="point-description">${escapeHtml(point.description)}</div>` : ''}
+                    </div>
+                    <div class="point-actions">
+                        <button class="btn-primary btn-small" onclick="zoomToPoint(${point.latitude}, ${point.longitude})">
+                            🎯 Ver
+                        </button>
+                        <button class="btn-danger btn-small" onclick="deletePoint(${point.id})">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ===== EXPORTAR =====
+        function exportToKML() {
+            const points = getCurrentUserPoints();
+            if (points.length === 0) {
+                showToast('⚠️ No hay puntos para exportar');
+                return;
+            }
+
+            const kml = generateKML(points);
+            downloadFile(kml, `${currentUser}_puntos.kml`, 'application/vnd.google-earth.kml+xml');
+            showToast('✅ KML descargado');
+        }
+
+        function generateKML(points) {
+            const placemarks = points.map(point => `
+    <Placemark>
+      <name>${escapeXml(point.name)}</name>
+      ${point.description ? `<description>${escapeXml(point.description)}</description>` : ''}
+      <Point>
+        <coordinates>${point.longitude},${point.latitude},${point.altitude}</coordinates>
+      </Point>
+    </Placemark>`).join('\n');
+
+            return `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Puntos GPS - ${currentUser}</name>
+    <description>Exportado el ${new Date().toLocaleDateString()}</description>
+${placemarks}
+  </Document>
+</kml>`;
+        }
+
+        function exportToGPX() {
+            const points = getCurrentUserPoints();
+            if (points.length === 0) {
+                showToast('⚠️ No hay puntos para exportar');
+                return;
+            }
+
+            const gpx = generateGPX(points);
+            downloadFile(gpx, `${currentUser}_puntos.gpx`, 'application/gpx+xml');
+            showToast('✅ GPX descargado');
+        }
+
+        function generateGPX(points) {
+            const waypoints = points.map(point => `
+  <wpt lat="${point.latitude}" lon="${point.longitude}">
+    <ele>${point.altitude}</ele>
+    <time>${point.timestamp}</time>
+    <name>${escapeXml(point.name)}</name>
+    ${point.description ? `<desc>${escapeXml(point.description)}</desc>` : ''}
+  </wpt>`).join('\n');
+
+            return `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="GPS Marker" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>Puntos GPS - ${currentUser}</name>
+    <time>${new Date().toISOString()}</time>
+  </metadata>
+${waypoints}
+</gpx>`;
+        }
+
+        // ===== UTILIDADES =====
+        function escapeXml(unsafe) {
+            if (!unsafe) return '';
+            return String(unsafe).replace(/[<>&'"]/g, c => {
+                switch (c) {
+                    case '<': return '&lt;';
+                    case '>': return '&gt;';
+                    case '&': return '&amp;';
+                    case '\'': return '&apos;';
+                    case '"': return '&quot;';
+                    default: return c;
+                }
+            });
+        }
+
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return String(unsafe).replace(/[<>&'"]/g, c => {
+                switch (c) {
+                    case '<': return '&lt;';
+                    case '>': return '&gt;';
+                    case '&': return '&amp;';
+                    case '\'': return '&#039;';
+                    case '"': return '&quot;';
+                    default: return c;
+                }
+            });
+        }
+
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
