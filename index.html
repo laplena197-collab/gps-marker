@@ -700,43 +700,8 @@
         };
 
         function handleSWMessage(event) {
-            if (event.data.type === 'CACHE_COMPLETE') {
-                console.log('✅ Cache complete:', event.data.count, 'tiles');
-                document.getElementById('downloadStatus').textContent = '✅ Descarga completada!';
-                document.getElementById('btnStartDownload').style.display = 'none';
-                document.getElementById('btnCancelDownload').style.display = 'none';
-                document.getElementById('btnClearCache').style.display = 'block';
-                
-                const indicator = document.getElementById('offlineIndicator');
-                indicator.className = 'offline-indicator cached';
-                indicator.textContent = '✅ Mapa Offline';
-                
-                const alert = document.getElementById('mapAlert');
-                alert.className = 'alert success';
-                document.getElementById('mapAlertText').textContent = 'Mapa descargado - Registra NAPS sin señal en zonas rurales';
-                
-                showToast('✅ Mapa descargado - Ya funciona offline!');
-                
-                // Ocultar banner después de 3 segundos
-                setTimeout(() => {
-                    document.getElementById('downloadBanner').style.display = 'none';
-                }, 3000);
-            }
-            
-            if (event.data.type === 'CACHE_CLEARED') {
-                console.log('✅ Cache cleared');
-                document.getElementById('btnStartDownload').style.display = 'block';
-                document.getElementById('btnClearCache').style.display = 'none';
-                document.getElementById('downloadProgress').style.display = 'none';
-                document.getElementById('downloadStatus').textContent = '';
-                document.getElementById('downloadProgressBar').style.width = '0%';
-                
-                const indicator = document.getElementById('offlineIndicator');
-                indicator.className = 'offline-indicator online';
-                indicator.textContent = '🌐 Online';
-                
-                showToast('✅ Mapa borrado del caché');
-            }
+            // Service Worker messages (actualmente no usado)
+            console.log('SW message:', event.data);
         }
 
         // ===== DESCARGA DE MAPA =====
@@ -803,8 +768,9 @@
         }
 
         async function downloadTilesInBatches(tiles) {
-            const batchSize = 100; // Descargar de 100 en 100 para más velocidad
+            const batchSize = 100;
             let downloaded = 0;
+            let successCount = 0;
             
             for (let i = 0; i < tiles.length; i += batchSize) {
                 if (downloadCancelled) {
@@ -815,23 +781,58 @@
                 
                 const batch = tiles.slice(i, i + batchSize);
                 
-                // Enviar batch al Service Worker
-                if (navigator.serviceWorker.controller) {
-                    navigator.serviceWorker.controller.postMessage({
-                        type: 'CACHE_TILES',
-                        tiles: batch
-                    });
-                }
+                // Descargar batch directamente (sin esperar Service Worker)
+                const promises = batch.map(async (tileUrl) => {
+                    try {
+                        const response = await fetch(tileUrl);
+                        if (response.ok) {
+                            // Guardar en cache manualmente
+                            const cache = await caches.open('map-tiles-v1');
+                            await cache.put(tileUrl, response);
+                            return true;
+                        }
+                    } catch (err) {
+                        console.error('Error downloading tile:', err);
+                    }
+                    return false;
+                });
                 
-                // Esperar menos entre batches para descargar más rápido
-                await new Promise(resolve => setTimeout(resolve, 200));
+                const results = await Promise.all(promises);
+                successCount += results.filter(r => r).length;
                 
                 downloaded += batch.length;
                 const percent = Math.round((downloaded / tiles.length) * 100);
                 
                 document.getElementById('downloadProgressBar').style.width = percent + '%';
-                document.getElementById('downloadStatus').textContent = `Descargando: ${downloaded}/${tiles.length} (${percent}%)`;
+                document.getElementById('downloadStatus').textContent = 
+                    `Descargando: ${downloaded}/${tiles.length} (${percent}%) - ${successCount} exitosos`;
+                
+                // Pausa corta entre batches
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
+            
+            // Descarga completada
+            console.log('✅ Download complete:', successCount, 'tiles cached');
+            document.getElementById('downloadStatus').textContent = '✅ Descarga completada!';
+            document.getElementById('downloadProgressBar').style.width = '100%';
+            document.getElementById('btnStartDownload').style.display = 'none';
+            document.getElementById('btnCancelDownload').style.display = 'none';
+            document.getElementById('btnClearCache').style.display = 'block';
+            
+            const indicator = document.getElementById('offlineIndicator');
+            indicator.className = 'offline-indicator cached';
+            indicator.textContent = '✅ Mapa Offline';
+            
+            const alert = document.getElementById('mapAlert');
+            alert.className = 'alert success';
+            document.getElementById('mapAlertText').textContent = 'Mapa descargado - Registra NAPS sin señal en zonas rurales';
+            
+            showToast(`✅ Mapa descargado - ${successCount} tiles guardados!`);
+            
+            // Ocultar banner después de 3 segundos
+            setTimeout(() => {
+                document.getElementById('downloadBanner').style.display = 'none';
+            }, 3000);
         }
 
         function cancelDownload() {
@@ -850,12 +851,30 @@
             document.getElementById('downloadProgressBar').style.width = '0%';
         }
 
-        function clearMapCache() {
+        async function clearMapCache() {
             if (confirm('¿Borrar el mapa descargado?\n\nTendrás que descargarlo de nuevo.')) {
-                if (navigator.serviceWorker.controller) {
-                    navigator.serviceWorker.controller.postMessage({
-                        type: 'CLEAR_CACHE'
-                    });
+                try {
+                    await caches.delete('map-tiles-v1');
+                    console.log('✅ Cache cleared');
+                    
+                    document.getElementById('btnStartDownload').style.display = 'block';
+                    document.getElementById('btnClearCache').style.display = 'none';
+                    document.getElementById('downloadProgress').style.display = 'none';
+                    document.getElementById('downloadStatus').textContent = '';
+                    document.getElementById('downloadProgressBar').style.width = '0%';
+                    
+                    const indicator = document.getElementById('offlineIndicator');
+                    indicator.className = 'offline-indicator online';
+                    indicator.textContent = '🌐 Online';
+                    
+                    const alert = document.getElementById('mapAlert');
+                    alert.className = 'alert';
+                    document.getElementById('mapAlertText').textContent = 'Descarga mapa zona Esmeraldas-Sto Domingo para trabajar sin señal';
+                    
+                    showToast('✅ Mapa borrado del caché');
+                } catch (error) {
+                    console.error('Error clearing cache:', error);
+                    showToast('❌ Error al borrar caché');
                 }
             }
         }
