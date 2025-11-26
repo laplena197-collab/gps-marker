@@ -3,14 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description" content="GPS Marker offline - Optimizado para móvil">
+    <meta name="description" content="GPS Marker offline - Descarga mapa de Ecuador">
     <meta name="theme-color" content="#667eea">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
     
-    <title>GPS Marker - Móvil Optimizado</title>
+    <title>GPS Marker - Descarga Mapa Ecuador</title>
     
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
@@ -18,7 +15,6 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -26,7 +22,6 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 10px;
-            overflow-x: hidden;
         }
 
         .container {
@@ -42,19 +37,12 @@
         .login-screen {
             padding: 40px 20px;
             text-align: center;
-            min-height: 400px;
         }
 
         .login-screen h1 {
             font-size: 28px;
             color: #667eea;
             margin-bottom: 10px;
-        }
-
-        .login-screen p {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 14px;
         }
 
         .user-list {
@@ -75,10 +63,9 @@
             align-items: center;
         }
 
-        .user-card:hover, .user-card:active {
+        .user-card:hover {
             border-color: #667eea;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
 
         .user-info {
@@ -162,29 +149,115 @@
             font-size: 13px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s;
+        }
+
+        /* DOWNLOAD BANNER */
+        .download-banner {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 20px;
+        }
+
+        .download-banner h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .download-banner p {
+            font-size: 14px;
+            margin-bottom: 15px;
+            opacity: 0.9;
+        }
+
+        .download-info {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .download-info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .download-progress {
+            width: 100%;
+            height: 12px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .download-progress-bar {
+            height: 100%;
+            background: white;
+            border-radius: 6px;
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        .download-status {
+            font-size: 13px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .btn-download {
+            background: white;
+            color: #d97706;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn-cancel {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
         }
 
         /* MAP */
         #map {
             height: 350px;
             width: 100%;
-            border-radius: 0;
-            z-index: 1;
         }
 
-        .offline-badge {
+        .offline-indicator {
             position: absolute;
             top: 80px;
             left: 10px;
-            background: #10b981;
-            color: white;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 11px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
             font-weight: 600;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             z-index: 1000;
+        }
+
+        .offline-indicator.cached {
+            background: #10b981;
+            color: white;
+        }
+
+        .offline-indicator.online {
+            background: #3b82f6;
+            color: white;
         }
 
         /* CONTENT */
@@ -206,12 +279,18 @@
         }
 
         .alert {
-            background: #d1fae5;
-            border: 2px solid #10b981;
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
             border-radius: 10px;
             padding: 12px;
             margin-bottom: 15px;
             font-size: 13px;
+            color: #1e40af;
+        }
+
+        .alert.success {
+            background: #d1fae5;
+            border-color: #10b981;
             color: #065f46;
         }
 
@@ -235,7 +314,6 @@
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             font-size: 14px;
-            transition: border-color 0.3s;
         }
 
         input:focus, textarea:focus {
@@ -271,17 +349,9 @@
             color: white;
         }
 
-        .btn-primary:active {
-            transform: scale(0.98);
-        }
-
         .btn-success {
             background: #10b981;
             color: white;
-        }
-
-        .btn-success:active {
-            transform: scale(0.98);
         }
 
         .btn-secondary {
@@ -312,12 +382,6 @@
             border-radius: 10px;
             padding: 12px;
             margin-bottom: 8px;
-            transition: all 0.3s;
-        }
-
-        .point-item:hover {
-            border-color: #667eea;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
         }
 
         .point-info {
@@ -395,14 +459,6 @@
             animation: slideUp 0.3s ease;
         }
 
-        .toast.error {
-            background: #ef4444;
-        }
-
-        .toast.success {
-            background: #10b981;
-        }
-
         @keyframes slideUp {
             from {
                 transform: translateX(-50%) translateY(100px);
@@ -412,6 +468,10 @@
                 transform: translateX(-50%) translateY(0);
                 opacity: 1;
             }
+        }
+
+        .hidden {
+            display: none !important;
         }
 
         @media (max-width: 768px) {
@@ -427,25 +487,21 @@
                 width: 100%;
             }
         }
-
-        .hidden {
-            display: none !important;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- LOGIN SCREEN -->
         <div id="loginScreen" class="login-screen">
-            <h1>📱 GPS Marker Móvil</h1>
-            <p>Optimizado para celular · 100% offline</p>
+            <h1>🗺️ GPS Marker Ecuador</h1>
+            <p>Con mapa offline descargable</p>
             
             <div class="user-list" id="userList"></div>
             
             <div class="new-user-form">
                 <h3>➕ Crear Nuevo Usuario</h3>
                 <div class="form-group">
-                    <input type="text" id="newUserName" placeholder="Tu nombre o apodo" autocomplete="off">
+                    <input type="text" id="newUserName" placeholder="Tu nombre" autocomplete="off">
                 </div>
                 <button class="btn-primary" onclick="createUser()">Crear Usuario</button>
             </div>
@@ -455,7 +511,7 @@
         <div id="mainApp" class="hidden">
             <div class="header">
                 <div class="header-left">
-                    <h2>📱 GPS Marker</h2>
+                    <h2>🗺️ GPS Marker</h2>
                     <div class="user-badge">
                         <span>👤</span>
                         <span id="currentUserName"></span>
@@ -464,17 +520,57 @@
                 <button class="logout-btn" onclick="logout()">🚪 Salir</button>
             </div>
 
+            <!-- DOWNLOAD BANNER -->
+            <div class="download-banner" id="downloadBanner">
+                <h3>📥 Descargar Mapa Offline</h3>
+                <p id="downloadDescription">Ecuador completo - Zoom hasta ver casas en calles - ~100 MB</p>
+                
+                <div class="download-info" id="downloadInfo" style="display: none;">
+                    <div class="download-info-item">
+                        <span>Área:</span>
+                        <span>Todo Ecuador</span>
+                    </div>
+                    <div class="download-info-item">
+                        <span>Zoom:</span>
+                        <span>Nivel 8-16 (casas visibles)</span>
+                    </div>
+                    <div class="download-info-item">
+                        <span>Tamaño estimado:</span>
+                        <span id="downloadSize">~100 MB</span>
+                    </div>
+                    <div class="download-info-item">
+                        <span>Tiempo estimado:</span>
+                        <span id="downloadTime">5-15 minutos</span>
+                    </div>
+                </div>
+                
+                <div class="download-progress" id="downloadProgress" style="display: none;">
+                    <div class="download-progress-bar" id="downloadProgressBar"></div>
+                </div>
+                <div class="download-status" id="downloadStatus"></div>
+                
+                <button class="btn-download" id="btnStartDownload" onclick="startDownload()">
+                    🚀 Descargar Mapa Ahora
+                </button>
+                <button class="btn-cancel" id="btnCancelDownload" onclick="cancelDownload()" style="display: none;">
+                    ❌ Cancelar Descarga
+                </button>
+                <button class="btn-cancel" id="btnClearCache" onclick="clearMapCache()" style="display: none;">
+                    🗑️ Borrar Mapa Descargado
+                </button>
+            </div>
+
             <!-- MAP -->
             <div style="position: relative;">
                 <div id="map"></div>
-                <div class="offline-badge">
-                    ✅ Offline
+                <div class="offline-indicator online" id="offlineIndicator">
+                    🌐 Online
                 </div>
             </div>
 
             <div class="content">
-                <div class="alert">
-                    ✅ <strong>Optimizado móvil:</strong> Guarda hasta 1000 puntos · Funciona sin internet
+                <div class="alert" id="mapAlert">
+                    ℹ️ <span id="mapAlertText">Descarga el mapa para trabajar sin internet</span>
                 </div>
 
                 <div class="stats">
@@ -487,22 +583,22 @@
                     
                     <div class="form-group">
                         <label for="pointName">Nombre del Punto *</label>
-                        <input type="text" id="pointName" placeholder="Ej: Casa, Oficina..." autocomplete="off">
+                        <input type="text" id="pointName" placeholder="Casa, Oficina..." autocomplete="off">
                     </div>
 
                     <div class="form-group">
                         <label for="latitude">Latitud *</label>
-                        <input type="number" id="latitude" step="any" placeholder="-0.250921" autocomplete="off" readonly>
+                        <input type="number" id="latitude" step="any" placeholder="-0.250921" readonly>
                     </div>
 
                     <div class="form-group">
                         <label for="longitude">Longitud *</label>
-                        <input type="number" id="longitude" step="any" placeholder="-79.175231" autocomplete="off" readonly>
+                        <input type="number" id="longitude" step="any" placeholder="-79.175231" readonly>
                     </div>
 
                     <div class="form-group">
                         <label for="altitude">Altitud (m)</label>
-                        <input type="number" id="altitude" step="any" placeholder="550" autocomplete="off">
+                        <input type="number" id="altitude" step="any" placeholder="550">
                     </div>
 
                     <div class="form-group">
@@ -512,10 +608,10 @@
 
                     <div class="button-group">
                         <button class="btn-primary" onclick="getCurrentLocation()">
-                            📍 GPS
+                            📍 Mi Ubicación
                         </button>
                         <button class="btn-primary" onclick="pickFromMap()">
-                            🗺️ Mapa
+                            🗺️ Del Mapa
                         </button>
                         <button class="btn-success" onclick="addPoint()">
                             ➕ GUARDAR
@@ -527,7 +623,7 @@
                     <div class="section-title">Puntos Guardados</div>
                     <div id="pointsList" class="points-list">
                         <div class="empty-state">
-                            <p>📍 Sin puntos<br>Usa GPS o mapa arriba</p>
+                            <p>📍 Sin puntos guardados</p>
                         </div>
                     </div>
 
@@ -543,7 +639,6 @@
 
     <div class="toast" id="toast"></div>
 
-    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
@@ -554,24 +649,219 @@
         let markers = [];
         let pickingFromMap = false;
         let tempMarker = null;
+        let downloadCancelled = false;
+        let serviceWorkerReady = false;
+        
+        // Límites de Ecuador
+        const ECUADOR_BOUNDS = {
+            north: 1.5,
+            south: -5.0,
+            west: -81.0,
+            east: -75.0
+        };
         
         const CENTER_ECUADOR = [-1.5, -78.5];
         const DB_NAME = 'GPSMarkerDB';
         const DB_VERSION = 1;
 
-        // ===== INDEXEDDB (MÁS ESPACIO QUE LOCALSTORAGE) =====
+        // ===== INICIALIZACIÓN =====
+        window.onload = async function() {
+            console.log('=== GPS Marker Starting ===');
+            
+            // Registrar Service Worker
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register('/service-worker.js');
+                    console.log('✅ Service Worker registered');
+                    serviceWorkerReady = true;
+                    
+                    // Escuchar mensajes del Service Worker
+                    navigator.serviceWorker.addEventListener('message', handleSWMessage);
+                } catch (error) {
+                    console.error('Service Worker registration failed:', error);
+                }
+            }
+            
+            try {
+                await initDB();
+                await renderUserList();
+            } catch (error) {
+                console.error('Init error:', error);
+                showToast('❌ Error al iniciar');
+            }
+        };
+
+        function handleSWMessage(event) {
+            if (event.data.type === 'CACHE_COMPLETE') {
+                console.log('✅ Cache complete:', event.data.count, 'tiles');
+                document.getElementById('downloadStatus').textContent = '✅ Descarga completada!';
+                document.getElementById('btnStartDownload').style.display = 'none';
+                document.getElementById('btnCancelDownload').style.display = 'none';
+                document.getElementById('btnClearCache').style.display = 'block';
+                
+                const indicator = document.getElementById('offlineIndicator');
+                indicator.className = 'offline-indicator cached';
+                indicator.textContent = '✅ Mapa Offline';
+                
+                const alert = document.getElementById('mapAlert');
+                alert.className = 'alert success';
+                document.getElementById('mapAlertText').textContent = 'Mapa descargado - Funciona sin internet';
+                
+                showToast('✅ Mapa descargado - Ya funciona offline!');
+                
+                // Ocultar banner después de 3 segundos
+                setTimeout(() => {
+                    document.getElementById('downloadBanner').style.display = 'none';
+                }, 3000);
+            }
+            
+            if (event.data.type === 'CACHE_CLEARED') {
+                console.log('✅ Cache cleared');
+                document.getElementById('btnStartDownload').style.display = 'block';
+                document.getElementById('btnClearCache').style.display = 'none';
+                document.getElementById('downloadProgress').style.display = 'none';
+                document.getElementById('downloadStatus').textContent = '';
+                document.getElementById('downloadProgressBar').style.width = '0%';
+                
+                const indicator = document.getElementById('offlineIndicator');
+                indicator.className = 'offline-indicator online';
+                indicator.textContent = '🌐 Online';
+                
+                showToast('✅ Mapa borrado del caché');
+            }
+        }
+
+        // ===== DESCARGA DE MAPA =====
+        function startDownload() {
+            if (!serviceWorkerReady) {
+                showToast('❌ Service Worker no disponible');
+                return;
+            }
+            
+            if (!navigator.onLine) {
+                showToast('❌ Necesitas internet para descargar');
+                return;
+            }
+            
+            if (confirm('¿Descargar mapa de Ecuador?\n\n• Tamaño: ~100 MB\n• Tiempo: 5-15 minutos\n• Zoom hasta nivel 16 (ver casas)\n\n¿Continuar?')) {
+                downloadCancelled = false;
+                
+                document.getElementById('btnStartDownload').style.display = 'none';
+                document.getElementById('btnCancelDownload').style.display = 'block';
+                document.getElementById('downloadInfo').style.display = 'block';
+                document.getElementById('downloadProgress').style.display = 'block';
+                document.getElementById('downloadStatus').textContent = 'Preparando descarga...';
+                
+                // Generar lista de tiles
+                const tiles = generateTileList();
+                console.log('Total tiles to download:', tiles.length);
+                
+                document.getElementById('downloadStatus').textContent = `Descargando ${tiles.length} imágenes...`;
+                
+                // Enviar al Service Worker para cachear
+                downloadTilesInBatches(tiles);
+            }
+        }
+
+        function generateTileList() {
+            const tiles = [];
+            const minZoom = 8;   // Vista de país
+            const maxZoom = 16;  // Ver casas en calles
+            
+            for (let zoom = minZoom; zoom <= maxZoom; zoom++) {
+                const bounds = latLonToTile(ECUADOR_BOUNDS.north, ECUADOR_BOUNDS.west, zoom);
+                const bounds2 = latLonToTile(ECUADOR_BOUNDS.south, ECUADOR_BOUNDS.east, zoom);
+                
+                const minX = Math.min(bounds.x, bounds2.x);
+                const maxX = Math.max(bounds.x, bounds2.x);
+                const minY = Math.min(bounds.y, bounds2.y);
+                const maxY = Math.max(bounds.y, bounds2.y);
+                
+                for (let x = minX; x <= maxX; x++) {
+                    for (let y = minY; y <= maxY; y++) {
+                        tiles.push(`https://a.tile.openstreetmap.org/${zoom}/${x}/${y}.png`);
+                    }
+                }
+            }
+            
+            return tiles;
+        }
+
+        function latLonToTile(lat, lon, zoom) {
+            const n = Math.pow(2, zoom);
+            const x = Math.floor((lon + 180) / 360 * n);
+            const y = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * n);
+            return { x, y };
+        }
+
+        async function downloadTilesInBatches(tiles) {
+            const batchSize = 50; // Descargar de 50 en 50
+            let downloaded = 0;
+            
+            for (let i = 0; i < tiles.length; i += batchSize) {
+                if (downloadCancelled) {
+                    showToast('❌ Descarga cancelada');
+                    resetDownloadUI();
+                    return;
+                }
+                
+                const batch = tiles.slice(i, i + batchSize);
+                
+                // Enviar batch al Service Worker
+                if (navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({
+                        type: 'CACHE_TILES',
+                        tiles: batch
+                    });
+                }
+                
+                // Esperar un poco entre batches para no saturar
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                downloaded += batch.length;
+                const percent = Math.round((downloaded / tiles.length) * 100);
+                
+                document.getElementById('downloadProgressBar').style.width = percent + '%';
+                document.getElementById('downloadStatus').textContent = `Descargando: ${downloaded}/${tiles.length} (${percent}%)`;
+            }
+        }
+
+        function cancelDownload() {
+            if (confirm('¿Cancelar descarga del mapa?')) {
+                downloadCancelled = true;
+                resetDownloadUI();
+            }
+        }
+
+        function resetDownloadUI() {
+            document.getElementById('btnStartDownload').style.display = 'block';
+            document.getElementById('btnCancelDownload').style.display = 'none';
+            document.getElementById('downloadInfo').style.display = 'none';
+            document.getElementById('downloadProgress').style.display = 'none';
+            document.getElementById('downloadStatus').textContent = '';
+            document.getElementById('downloadProgressBar').style.width = '0%';
+        }
+
+        function clearMapCache() {
+            if (confirm('¿Borrar el mapa descargado?\n\nTendrás que descargarlo de nuevo.')) {
+                if (navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.controller.postMessage({
+                        type: 'CLEAR_CACHE'
+                    });
+                }
+            }
+        }
+
+        // ===== INDEXEDDB =====
         function initDB() {
             return new Promise((resolve, reject) => {
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
                 
-                request.onerror = () => {
-                    console.error('Error opening IndexedDB');
-                    reject(request.error);
-                };
+                request.onerror = () => reject(request.error);
                 
                 request.onsuccess = () => {
                     db = request.result;
-                    console.log('✅ IndexedDB initialized');
+                    console.log('✅ IndexedDB ready');
                     resolve(db);
                 };
                 
@@ -579,14 +869,12 @@
                     db = event.target.result;
                     
                     if (!db.objectStoreNames.contains('users')) {
-                        const userStore = db.createObjectStore('users', { keyPath: 'name' });
-                        console.log('Created users store');
+                        db.createObjectStore('users', { keyPath: 'name' });
                     }
                     
                     if (!db.objectStoreNames.contains('points')) {
                         const pointStore = db.createObjectStore('points', { keyPath: 'id' });
                         pointStore.createIndex('username', 'username', { unique: false });
-                        console.log('Created points store');
                     }
                 };
             });
@@ -602,16 +890,8 @@
                 };
                 
                 const request = store.put(user);
-                
-                request.onsuccess = () => {
-                    console.log('User saved:', username);
-                    resolve(true);
-                };
-                
-                request.onerror = () => {
-                    console.error('Error saving user');
-                    reject(request.error);
-                };
+                request.onsuccess = () => resolve(true);
+                request.onerror = () => reject(request.error);
             });
         }
 
@@ -621,41 +901,24 @@
                 const store = transaction.objectStore('users');
                 const request = store.getAll();
                 
-                request.onsuccess = () => {
-                    console.log('Users loaded:', request.result.length);
-                    resolve(request.result);
-                };
-                
-                request.onerror = () => {
-                    console.error('Error loading users');
-                    reject(request.error);
-                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
             });
         }
 
         async function deleteUser(username) {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    // Delete user
-                    const userTx = db.transaction(['users'], 'readwrite');
-                    await userTx.objectStore('users').delete(username);
-                    
-                    // Delete all points for user
-                    const points = await getUserPoints(username);
-                    const pointTx = db.transaction(['points'], 'readwrite');
-                    const pointStore = pointTx.objectStore('points');
-                    
-                    for (const point of points) {
-                        await pointStore.delete(point.id);
-                    }
-                    
-                    console.log('User deleted:', username);
-                    resolve(true);
-                } catch (error) {
-                    console.error('Error deleting user:', error);
-                    reject(error);
-                }
-            });
+            const userTx = db.transaction(['users'], 'readwrite');
+            await userTx.objectStore('users').delete(username);
+            
+            const points = await getUserPoints(username);
+            const pointTx = db.transaction(['points'], 'readwrite');
+            const pointStore = pointTx.objectStore('points');
+            
+            for (const point of points) {
+                await pointStore.delete(point.id);
+            }
+            
+            return true;
         }
 
         async function savePoint(point) {
@@ -665,14 +928,10 @@
                 const request = store.put(point);
                 
                 request.onsuccess = () => {
-                    console.log('✅ Point saved to IndexedDB:', point.name);
+                    console.log('✅ Point saved:', point.name);
                     resolve(true);
                 };
-                
-                request.onerror = () => {
-                    console.error('❌ Error saving point to IndexedDB');
-                    reject(request.error);
-                };
+                request.onerror = () => reject(request.error);
             });
         }
 
@@ -683,15 +942,8 @@
                 const index = store.index('username');
                 const request = index.getAll(username);
                 
-                request.onsuccess = () => {
-                    console.log('Points loaded for', username, ':', request.result.length);
-                    resolve(request.result);
-                };
-                
-                request.onerror = () => {
-                    console.error('Error loading points');
-                    reject(request.error);
-                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
             });
         }
 
@@ -701,15 +953,8 @@
                 const store = transaction.objectStore('points');
                 const request = store.delete(id);
                 
-                request.onsuccess = () => {
-                    console.log('Point deleted:', id);
-                    resolve(true);
-                };
-                
-                request.onerror = () => {
-                    console.error('Error deleting point');
-                    reject(request.error);
-                };
+                request.onsuccess = () => resolve(true);
+                request.onerror = () => reject(request.error);
             });
         }
 
@@ -721,30 +966,16 @@
             for (const point of points) {
                 await store.delete(point.id);
             }
-            
-            console.log('All points cleared for:', username);
         }
 
-        // ===== INICIALIZACIÓN =====
-        window.onload = async function() {
-            console.log('=== GPS Marker Mobile App Starting ===');
-            try {
-                await initDB();
-                await renderUserList();
-            } catch (error) {
-                console.error('Initialization error:', error);
-                showToast('❌ Error al iniciar. Recarga la página', 'error');
-            }
-        };
-
-        // ===== GESTIÓN DE USUARIOS =====
+        // ===== USUARIOS =====
         async function renderUserList() {
             const userList = document.getElementById('userList');
             try {
                 const users = await getAllUsers();
                 
                 if (users.length === 0) {
-                    userList.innerHTML = '<p style="color: #999; font-size: 14px;">No hay usuarios</p>';
+                    userList.innerHTML = '<p style="color: #999;">No hay usuarios</p>';
                     return;
                 }
 
@@ -765,8 +996,7 @@
                 
                 userList.innerHTML = userHTML.join('');
             } catch (error) {
-                console.error('Error rendering users:', error);
-                userList.innerHTML = '<p style="color: #ef4444;">Error al cargar usuarios</p>';
+                console.error('Error:', error);
             }
         }
 
@@ -774,7 +1004,7 @@
             const userName = document.getElementById('newUserName').value.trim();
             
             if (!userName) {
-                showToast('⚠️ Ingresa un nombre', 'error');
+                showToast('⚠️ Ingresa un nombre');
                 return;
             }
 
@@ -782,36 +1012,33 @@
                 await saveUser(userName);
                 document.getElementById('newUserName').value = '';
                 await renderUserList();
-                showToast('✅ Usuario creado', 'success');
+                showToast('✅ Usuario creado');
             } catch (error) {
-                console.error('Error creating user:', error);
-                showToast('❌ Error al crear usuario', 'error');
+                showToast('❌ Error');
             }
         }
 
         async function confirmDeleteUser(username) {
-            if (confirm(`¿Eliminar "${username}" y sus puntos?`)) {
+            if (confirm(`¿Eliminar "${username}"?`)) {
                 try {
                     await deleteUser(username);
                     await renderUserList();
-                    showToast('✅ Usuario eliminado', 'success');
+                    showToast('✅ Eliminado');
                 } catch (error) {
-                    console.error('Error deleting user:', error);
-                    showToast('❌ Error al eliminar', 'error');
+                    showToast('❌ Error');
                 }
             }
         }
 
         async function selectUser(username) {
             currentUser = username;
-            console.log('✅ User selected:', username);
             document.getElementById('currentUserName').textContent = username;
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.remove('hidden');
             
             initMap();
             await renderPoints();
-            showToast('👋 Hola ' + username, 'success');
+            showToast('👋 Hola ' + username);
         }
 
         function logout() {
@@ -820,7 +1047,6 @@
                 document.getElementById('mainApp').classList.add('hidden');
                 document.getElementById('loginScreen').classList.remove('hidden');
                 clearForm();
-                showToast('👋 Sesión cerrada', 'success');
             }
         }
 
@@ -828,7 +1054,6 @@
         function initMap() {
             if (map) return;
 
-            console.log('Initializing map...');
             map = L.map('map').setView(CENTER_ECUADOR, 7);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -854,7 +1079,7 @@
                     }).addTo(map);
                     
                     pickingFromMap = false;
-                    showToast('✅ Ubicación: ' + e.latlng.lat.toFixed(4) + ', ' + e.latlng.lng.toFixed(4), 'success');
+                    showToast('✅ Ubicación seleccionada');
                 }
             });
 
@@ -863,7 +1088,7 @@
 
         function pickFromMap() {
             pickingFromMap = true;
-            showToast('🗺️ Toca el mapa', 'success');
+            showToast('🗺️ Toca el mapa');
         }
 
         async function loadPointsToMap() {
@@ -887,18 +1112,18 @@
                     map.fitBounds(bounds, { padding: [50, 50] });
                 }
             } catch (error) {
-                console.error('Error loading points to map:', error);
+                console.error('Error:', error);
             }
         }
 
         // ===== GPS =====
         function getCurrentLocation() {
             if (!navigator.geolocation) {
-                showToast('❌ GPS no disponible', 'error');
+                showToast('❌ GPS no disponible');
                 return;
             }
 
-            showToast('📍 Obteniendo GPS...', 'success');
+            showToast('📍 Obteniendo GPS...');
 
             navigator.geolocation.getCurrentPosition(
                 (position) => {
@@ -926,14 +1151,10 @@
                         }).addTo(map);
                     }
 
-                    showToast(`✅ GPS OK (${Math.round(position.coords.accuracy)}m)`, 'success');
+                    showToast(`✅ GPS obtenido`);
                 },
                 (error) => {
-                    let msg = '❌ GPS: ';
-                    if (error.code === 1) msg += 'Sin permisos';
-                    else if (error.code === 2) msg += 'No disponible';
-                    else msg += 'Timeout';
-                    showToast(msg, 'error');
+                    showToast('❌ Error GPS');
                 },
                 {
                     enableHighAccuracy: true,
@@ -945,8 +1166,6 @@
 
         // ===== PUNTOS =====
         async function addPoint() {
-            console.log('=== ADDING POINT ===');
-            
             const name = document.getElementById('pointName').value.trim();
             const lat = parseFloat(document.getElementById('latitude').value);
             const lon = parseFloat(document.getElementById('longitude').value);
@@ -954,17 +1173,12 @@
             const desc = document.getElementById('description').value.trim();
 
             if (!name) {
-                showToast('⚠️ Falta el nombre', 'error');
+                showToast('⚠️ Falta nombre');
                 return;
             }
 
             if (isNaN(lat) || isNaN(lon)) {
-                showToast('⚠️ Falta ubicación. Usa GPS o mapa', 'error');
-                return;
-            }
-
-            if (lat < -90 || lat > 90 || lon < -180 || lon > 180) {
-                showToast('⚠️ Coordenadas inválidas', 'error');
+                showToast('⚠️ Falta ubicación');
                 return;
             }
 
@@ -990,38 +1204,34 @@
                     tempMarker = null;
                 }
 
-                showToast('✅ Punto "' + name + '" guardado', 'success');
-                console.log('✅ Point saved successfully');
+                showToast('✅ Punto guardado');
             } catch (error) {
-                console.error('❌ Error saving point:', error);
-                showToast('❌ Error al guardar. Intenta de nuevo', 'error');
+                showToast('❌ Error al guardar');
             }
         }
 
         async function confirmDeletePoint(id) {
-            if (confirm('¿Eliminar este punto?')) {
+            if (confirm('¿Eliminar?')) {
                 try {
                     await deletePoint(id);
                     await renderPoints();
                     await loadPointsToMap();
-                    showToast('✅ Punto eliminado', 'success');
+                    showToast('✅ Eliminado');
                 } catch (error) {
-                    console.error('Error:', error);
-                    showToast('❌ Error al eliminar', 'error');
+                    showToast('❌ Error');
                 }
             }
         }
 
         async function clearAllPoints() {
-            if (confirm('¿Eliminar TODOS los puntos?')) {
+            if (confirm('¿Eliminar TODOS?')) {
                 try {
                     await clearUserPoints(currentUser);
                     await renderPoints();
                     await loadPointsToMap();
-                    showToast('✅ Todos eliminados', 'success');
+                    showToast('✅ Todos eliminados');
                 } catch (error) {
-                    console.error('Error:', error);
-                    showToast('❌ Error', 'error');
+                    showToast('❌ Error');
                 }
             }
         }
@@ -1029,7 +1239,6 @@
         function zoomToPoint(lat, lon) {
             if (map) {
                 map.setView([lat, lon], 17);
-                showToast('🎯 Mostrando punto', 'success');
             }
         }
 
@@ -1052,11 +1261,7 @@
                 pointCount.textContent = points.length;
 
                 if (points.length === 0) {
-                    pointsList.innerHTML = `
-                        <div class="empty-state">
-                            <p>📍 Sin puntos<br>Usa GPS o mapa arriba</p>
-                        </div>
-                    `;
+                    pointsList.innerHTML = '<div class="empty-state"><p>📍 Sin puntos</p></div>';
                     exportButtons.style.display = 'none';
                     return;
                 }
@@ -1069,23 +1274,17 @@
                             <div class="point-name">📍 ${escapeHtml(point.name)}</div>
                             <div class="point-coords">
                                 ${point.latitude.toFixed(6)}, ${point.longitude.toFixed(6)}
-                                ${point.altitude ? `, ${point.altitude}m` : ''}
                             </div>
                             ${point.description ? `<div class="point-description">${escapeHtml(point.description)}</div>` : ''}
                         </div>
                         <div class="point-actions">
-                            <button class="btn-primary btn-small" onclick="zoomToPoint(${point.latitude}, ${point.longitude})">
-                                🎯
-                            </button>
-                            <button class="btn-danger btn-small" onclick="confirmDeletePoint(${point.id})">
-                                🗑️
-                            </button>
+                            <button class="btn-primary btn-small" onclick="zoomToPoint(${point.latitude}, ${point.longitude})">🎯</button>
+                            <button class="btn-danger btn-small" onclick="confirmDeletePoint(${point.id})">🗑️</button>
                         </div>
                     </div>
                 `).join('');
             } catch (error) {
-                console.error('Error rendering points:', error);
-                pointsList.innerHTML = '<p style="color: #ef4444;">Error al cargar puntos</p>';
+                console.error('Error:', error);
             }
         }
 
@@ -1094,16 +1293,15 @@
             try {
                 const points = await getUserPoints(currentUser);
                 if (points.length === 0) {
-                    showToast('⚠️ No hay puntos', 'error');
+                    showToast('⚠️ No hay puntos');
                     return;
                 }
 
                 const kml = generateKML(points);
                 downloadFile(kml, `${currentUser}_${getDateStr()}.kml`, 'application/vnd.google-earth.kml+xml');
-                showToast('✅ KML descargado', 'success');
+                showToast('✅ KML descargado');
             } catch (error) {
-                console.error('Export error:', error);
-                showToast('❌ Error al exportar', 'error');
+                showToast('❌ Error');
             }
         }
 
@@ -1130,16 +1328,15 @@ ${placemarks}
             try {
                 const points = await getUserPoints(currentUser);
                 if (points.length === 0) {
-                    showToast('⚠️ No hay puntos', 'error');
+                    showToast('⚠️ No hay puntos');
                     return;
                 }
 
                 const gpx = generateGPX(points);
                 downloadFile(gpx, `${currentUser}_${getDateStr()}.gpx`, 'application/gpx+xml');
-                showToast('✅ GPX descargado', 'success');
+                showToast('✅ GPX descargado');
             } catch (error) {
-                console.error('Export error:', error);
-                showToast('❌ Error al exportar', 'error');
+                showToast('❌ Error');
             }
         }
 
@@ -1210,16 +1407,14 @@ ${waypoints}
                    String(now.getDate()).padStart(2, '0');
         }
 
-        function showToast(message, type = 'success') {
+        function showToast(message) {
             const toast = document.getElementById('toast');
             toast.textContent = message;
-            toast.className = 'toast show ' + type;
+            toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3000);
         }
-
-        console.log('=== App Loaded - Mobile Optimized ===');
     </script>
 </body>
 </html>
