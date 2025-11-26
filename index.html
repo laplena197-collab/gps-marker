@@ -523,7 +523,7 @@
             <!-- DOWNLOAD BANNER -->
             <div class="download-banner" id="downloadBanner">
                 <h3>📥 Descargar Mapa Zona Esmeraldas-Santo Domingo</h3>
-                <p id="downloadDescription">Tu zona de trabajo - Calles rurales y pueblos - ~8 MB</p>
+                <p id="downloadDescription">Tu zona de trabajo - Sin cuadros grises - ~20 MB</p>
                 
                 <div class="download-info" id="downloadInfo" style="display: none;">
                     <div class="download-info-item">
@@ -536,15 +536,15 @@
                     </div>
                     <div class="download-info-item">
                         <span>Zoom:</span>
-                        <span>Nivel 9-14 (calles rurales perfectas)</span>
+                        <span>Nivel 8-15 (sin cuadros grises)</span>
                     </div>
                     <div class="download-info-item">
                         <span>Tamaño estimado:</span>
-                        <span id="downloadSize">~8 MB</span>
+                        <span id="downloadSize">~20 MB</span>
                     </div>
                     <div class="download-info-item">
                         <span>Tiempo estimado:</span>
-                        <span id="downloadTime">1 minuto</span>
+                        <span id="downloadTime">2-3 minutos</span>
                     </div>
                     <div class="download-info-item">
                         <span>Uso:</span>
@@ -716,7 +716,7 @@
                 return;
             }
             
-            if (confirm('¿Descargar mapa de tu zona de trabajo?\n\nZona: Esmeraldas - Santo Domingo - Costa\n\n• Tamaño: ~8 MB\n• Tiempo: 1 minuto\n• Zoom hasta nivel 14\n• Incluye: Esmeraldas, Atacames, Muisne, Pedernales, El Carmen, Santo Domingo, Quinindé\n• Calles rurales, pueblos, referencias\n\n¿Continuar?')) {
+            if (confirm('¿Descargar mapa de tu zona de trabajo?\n\nZona: Esmeraldas - Santo Domingo - Costa\n\n• Tamaño: ~20 MB\n• Tiempo: 2-3 minutos\n• Zoom hasta nivel 15 (SIN cuadros grises)\n• Incluye: Esmeraldas, Atacames, Muisne, Pedernales, El Carmen, Santo Domingo, Quinindé\n• Calles rurales detalladas\n\n¿Continuar?')) {
                 downloadCancelled = false;
                 
                 document.getElementById('btnStartDownload').style.display = 'none';
@@ -738,8 +738,8 @@
 
         function generateTileList() {
             const tiles = [];
-            const minZoom = 9;   // Vista regional
-            const maxZoom = 14;  // Calles rurales perfectas
+            const minZoom = 8;   // Vista amplia
+            const maxZoom = 15;  // Calles muy detalladas
             
             for (let zoom = minZoom; zoom <= maxZoom; zoom++) {
                 const bounds = latLonToTile(ECUADOR_BOUNDS.north, ECUADOR_BOUNDS.west, zoom);
@@ -781,18 +781,27 @@
                 
                 const batch = tiles.slice(i, i + batchSize);
                 
-                // Descargar batch directamente (sin esperar Service Worker)
+                // Descargar batch con reintentos
                 const promises = batch.map(async (tileUrl) => {
-                    try {
-                        const response = await fetch(tileUrl);
-                        if (response.ok) {
-                            // Guardar en cache manualmente
-                            const cache = await caches.open('map-tiles-v1');
-                            await cache.put(tileUrl, response);
-                            return true;
+                    let retries = 3;
+                    while (retries > 0) {
+                        try {
+                            const response = await fetch(tileUrl);
+                            if (response.ok) {
+                                // Guardar en cache
+                                const cache = await caches.open('map-tiles-v1');
+                                await cache.put(tileUrl, response);
+                                return true;
+                            }
+                            retries--;
+                        } catch (err) {
+                            retries--;
+                            if (retries > 0) {
+                                await new Promise(resolve => setTimeout(resolve, 500));
+                            } else {
+                                console.error('Error downloading tile after retries:', tileUrl);
+                            }
                         }
-                    } catch (err) {
-                        console.error('Error downloading tile:', err);
                     }
                     return false;
                 });
@@ -1085,7 +1094,7 @@
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap',
-                maxZoom: 19,
+                maxZoom: 15,  // Limitar zoom a lo descargado
                 minZoom: 3
             }).addTo(map);
 
