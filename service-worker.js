@@ -1,3 +1,4 @@
+// Version 2024-11-25
 // Service Worker para cachear tiles del mapa
 const CACHE_NAME = 'gps-marker-v1';
 const MAP_CACHE = 'map-tiles-v1';
