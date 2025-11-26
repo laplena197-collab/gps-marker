@@ -522,25 +522,33 @@
 
             <!-- DOWNLOAD BANNER -->
             <div class="download-banner" id="downloadBanner">
-                <h3>📥 Descargar Mapa Offline</h3>
-                <p id="downloadDescription">Ecuador completo - Zoom hasta ver casas en calles - ~100 MB</p>
+                <h3>📥 Descargar Mapa Zona Esmeraldas-Santo Domingo</h3>
+                <p id="downloadDescription">Tu zona de trabajo - Calles rurales y pueblos - ~8 MB</p>
                 
                 <div class="download-info" id="downloadInfo" style="display: none;">
                     <div class="download-info-item">
                         <span>Área:</span>
-                        <span>Todo Ecuador</span>
+                        <span>Esmeraldas - Santo Domingo - Costa</span>
+                    </div>
+                    <div class="download-info-item">
+                        <span>Ciudades incluidas:</span>
+                        <span>Esmeraldas, Atacames, Muisne, Pedernales, El Carmen, Sto Domingo, Quinindé</span>
                     </div>
                     <div class="download-info-item">
                         <span>Zoom:</span>
-                        <span>Nivel 8-16 (casas visibles)</span>
+                        <span>Nivel 9-14 (calles rurales perfectas)</span>
                     </div>
                     <div class="download-info-item">
                         <span>Tamaño estimado:</span>
-                        <span id="downloadSize">~100 MB</span>
+                        <span id="downloadSize">~8 MB</span>
                     </div>
                     <div class="download-info-item">
                         <span>Tiempo estimado:</span>
-                        <span id="downloadTime">5-15 minutos</span>
+                        <span id="downloadTime">1 minuto</span>
+                    </div>
+                    <div class="download-info-item">
+                        <span>Uso:</span>
+                        <span>Registro NAPS fibra óptica</span>
                     </div>
                 </div>
                 
@@ -570,7 +578,7 @@
 
             <div class="content">
                 <div class="alert" id="mapAlert">
-                    ℹ️ <span id="mapAlertText">Descarga el mapa para trabajar sin internet</span>
+                    ℹ️ <span id="mapAlertText">Descarga mapa zona Esmeraldas-Sto Domingo para trabajar sin señal</span>
                 </div>
 
                 <div class="stats">
@@ -583,7 +591,7 @@
                     
                     <div class="form-group">
                         <label for="pointName">Nombre del Punto *</label>
-                        <input type="text" id="pointName" placeholder="Casa, Oficina..." autocomplete="off">
+                        <input type="text" id="pointName" placeholder="Ej: NAPS-001, Poste 123..." autocomplete="off">
                     </div>
 
                     <div class="form-group">
@@ -603,7 +611,7 @@
 
                     <div class="form-group">
                         <label for="description">Descripción</label>
-                        <textarea id="description" placeholder="Notas..."></textarea>
+                        <textarea id="description" placeholder="Ej: Poste de concreto, sector rural, cerca de iglesia..."></textarea>
                     </div>
 
                     <div class="button-group">
@@ -652,15 +660,15 @@
         let downloadCancelled = false;
         let serviceWorkerReady = false;
         
-        // Límites de Ecuador
+        // Límites de la zona de trabajo (Esmeraldas - Santo Domingo - Costa)
         const ECUADOR_BOUNDS = {
-            north: 1.5,
-            south: -5.0,
-            west: -81.0,
-            east: -75.0
+            north: 1.5,      // Esmeraldas, Borbón
+            south: -1.0,     // Santo Domingo
+            west: -80.5,     // Costa Pacífico
+            east: -79.0      // Quinindé
         };
         
-        const CENTER_ECUADOR = [-1.5, -78.5];
+        const CENTER_ECUADOR = [0.25, -79.75]; // Centro de la zona
         const DB_NAME = 'GPSMarkerDB';
         const DB_VERSION = 1;
 
@@ -671,7 +679,7 @@
             // Registrar Service Worker
             if ('serviceWorker' in navigator) {
                 try {
-                    const registration = await navigator.serviceWorker.register('/gps-marker/service-worker.js');
+                    const registration = await navigator.serviceWorker.register('./service-worker.js');
                     console.log('✅ Service Worker registered');
                     serviceWorkerReady = true;
                     
@@ -705,7 +713,7 @@
                 
                 const alert = document.getElementById('mapAlert');
                 alert.className = 'alert success';
-                document.getElementById('mapAlertText').textContent = 'Mapa descargado - Funciona sin internet';
+                document.getElementById('mapAlertText').textContent = 'Mapa descargado - Registra NAPS sin señal en zonas rurales';
                 
                 showToast('✅ Mapa descargado - Ya funciona offline!');
                 
@@ -743,7 +751,7 @@
                 return;
             }
             
-            if (confirm('¿Descargar mapa de Ecuador?\n\n• Tamaño: ~100 MB\n• Tiempo: 5-15 minutos\n• Zoom hasta nivel 16 (ver casas)\n\n¿Continuar?')) {
+            if (confirm('¿Descargar mapa de tu zona de trabajo?\n\nZona: Esmeraldas - Santo Domingo - Costa\n\n• Tamaño: ~8 MB\n• Tiempo: 1 minuto\n• Zoom hasta nivel 14\n• Incluye: Esmeraldas, Atacames, Muisne, Pedernales, El Carmen, Santo Domingo, Quinindé\n• Calles rurales, pueblos, referencias\n\n¿Continuar?')) {
                 downloadCancelled = false;
                 
                 document.getElementById('btnStartDownload').style.display = 'none';
@@ -765,8 +773,8 @@
 
         function generateTileList() {
             const tiles = [];
-            const minZoom = 8;   // Vista de país
-            const maxZoom = 16;  // Ver casas en calles
+            const minZoom = 9;   // Vista regional
+            const maxZoom = 14;  // Calles rurales perfectas
             
             for (let zoom = minZoom; zoom <= maxZoom; zoom++) {
                 const bounds = latLonToTile(ECUADOR_BOUNDS.north, ECUADOR_BOUNDS.west, zoom);
@@ -795,7 +803,7 @@
         }
 
         async function downloadTilesInBatches(tiles) {
-            const batchSize = 50; // Descargar de 50 en 50
+            const batchSize = 100; // Descargar de 100 en 100 para más velocidad
             let downloaded = 0;
             
             for (let i = 0; i < tiles.length; i += batchSize) {
@@ -815,8 +823,8 @@
                     });
                 }
                 
-                // Esperar un poco entre batches para no saturar
-                await new Promise(resolve => setTimeout(resolve, 500));
+                // Esperar menos entre batches para descargar más rápido
+                await new Promise(resolve => setTimeout(resolve, 200));
                 
                 downloaded += batch.length;
                 const percent = Math.round((downloaded / tiles.length) * 100);
@@ -1054,7 +1062,7 @@
         function initMap() {
             if (map) return;
 
-            map = L.map('map').setView(CENTER_ECUADOR, 7);
+            map = L.map('map').setView(CENTER_ECUADOR, 9);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap',
